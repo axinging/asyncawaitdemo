@@ -5,6 +5,49 @@ const useAutoLayout = true;
 
 let langOption = 'wgsl';
 let caseOption = 0;
+function loop(max, tag = '') {
+  var sum = 0;
+  console.log("Loop begin");
+  const start = performance.now();
+  for (var i = 0; i < max; i++) {
+      sum = sum + Math.sqrt(i);
+  }
+  const end = performance.now();
+  console.log("Loop time: " + (end- start));
+}
+
+/*
+(async () => {
+  await runProgram();
+})();
+*/
+
+runProgram();
+const LOOP_SIZE = 1000000000;
+console.log("runProgram end");
+loop(LOOP_SIZE);
+console.log("runProgram end2");
+
+async function runProgram() {
+  const device = await getDevice();
+  for (var j = 0; j < 1; j++) {
+    const batch = 1 * 100000;  // 262145;
+    const size = batch * 1;
+    const firstMatrix = new Int32Array(size);
+    const secondMatrix = new Float32Array(size);
+    for (let i = 0; i < size; i++) {
+      firstMatrix[i] = i;
+      secondMatrix[i] = i + 10;
+    }
+
+    let useWGSL = getURLState(window.location.search);
+    {
+      const arrayBuffer =
+          await executeMatmul(device, firstMatrix, secondMatrix, size, useWGSL);
+      console.log(new Float32Array(arrayBuffer));
+    }
+  }
+}
 
 function getURLState(url) {
   let params = new URLSearchParams(url);
@@ -193,17 +236,6 @@ function submitQueue(queue, currentCommandEncoder) {
   queue.submit([currentCommandEncoder.finish()]);
 }
 
-const LOOP_SIZE = 1000000000;
-function loop(max, tag = '') {
-    var sum = 0;
-    const start = performance.now();
-    for (var i = 0; i < max; i++) {
-        sum = sum + Math.sqrt(i);
-    }
-    const end = performance.now();
-    console.log("Loop time: " + (end- start));
-}
-
 async function executeMatmul(device, firstMatrix, secondMatrix, size, useWGSL) {
   // console.time("executeMatmul");
   var glslFuncs = {
@@ -294,17 +326,15 @@ async function executeMatmul(device, firstMatrix, secondMatrix, size, useWGSL) {
   // Read buffer.
   let start = performance.now();
   await getBufferData(device, resultMatrixBuffer, resultMatrixBufferSize);
-  console.log(performance.now() - start);
+  console.log("getBufferData 2: "+ (performance.now() - start));
   loop(LOOP_SIZE);
   resultMatrixBuffer.destroy();
 }
 
-
-
 async function getBufferData(
     device, resultMatrixBuffer, resultMatrixBufferSize) {
   console.time('getBufferData');
-  // console.log("getBufferData 1");
+  console.log("getBufferData 1");
   // Get a GPU buffer for reading in an unmapped state.
   const gpuReadBuffer = device.createBuffer({
     size: resultMatrixBufferSize,
@@ -331,7 +361,6 @@ async function getBufferData(
   await mapPromise;
   console.timeEnd('awaitMapAsync');
   const values = gpuReadBuffer.getMappedRange().slice(0);
-  console.log(JSON.stringify(values));
   console.log(new Float32Array(values));
 
   gpuReadBuffer.unmap();
@@ -365,30 +394,6 @@ async function getDevice() {
   }
   return await adapter.requestDevice(deviceDescriptor);
 }
-
-(async () => {
-  const device = await getDevice();
-
-  for (var j = 0; j < 1; j++) {
-    const batch = 1 * 100000;  // 262145;
-    const size = batch * 1;
-    // const firstMatrix = new Float32Array(size);
-    // const secondMatrix = new Float32Array(size);
-    const firstMatrix = new Int32Array(size);
-    const secondMatrix = new Float32Array(size);
-    for (let i = 0; i < size; i++) {
-      firstMatrix[i] = i;
-      secondMatrix[i] = i + 10;
-    }
-
-    let useWGSL = getURLState(window.location.search);
-    {
-      const arrayBuffer =
-          await executeMatmul(device, firstMatrix, secondMatrix, size, useWGSL);
-      console.log(new Float32Array(arrayBuffer));
-    }
-  }
-})();
 
 async function getModuleCode(computeCode, useWGSL) {
   if (useWGSL) {
