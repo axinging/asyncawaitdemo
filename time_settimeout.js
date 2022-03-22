@@ -1,11 +1,15 @@
 
 
-const loopCount = getURLState(location.search);
+const [loopCount, control] = getURLState(location.search);
 
 function resolveAfter2Seconds() {
   var promise = new Promise(resolve => {
     console.log('new Promise executor');
+    // const start = performance.now();
+
     setTimeout(() => {
+      // const end = performance.now();
+      // console.log('setTimeout time = ' + (end - start));
       resolve('resolved');
     }, 2000);
   });
@@ -33,7 +37,9 @@ function loop(max) {
 
 const LOOP_SIZE = 1000000000 * loopCount;
 const start = performance.now();
-loop(LOOP_SIZE);
+if (control != 1) {
+  loop(LOOP_SIZE);
+}
 const end = performance.now();
 console.log(`sync loop (${LOOP_SIZE}) time = ` + (end - start));
 asyncCall();

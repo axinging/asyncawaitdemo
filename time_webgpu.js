@@ -196,10 +196,12 @@ function submitQueue(queue, currentCommandEncoder) {
 const LOOP_SIZE = 1000000000;
 function loop(max, tag = '') {
     var sum = 0;
-    console.log("loop");
+    const start = performance.now();
     for (var i = 0; i < max; i++) {
         sum = sum + Math.sqrt(i);
     }
+    const end = performance.now();
+    console.log("Loop time: " + (end- start));
 }
 
 async function executeMatmul(device, firstMatrix, secondMatrix, size, useWGSL) {
@@ -290,7 +292,7 @@ async function executeMatmul(device, firstMatrix, secondMatrix, size, useWGSL) {
   gpuBufferSecondMatrix.destroy();
   
   // Read buffer.
-  const start = performance.now();
+  let start = performance.now();
   await getBufferData(device, resultMatrixBuffer, resultMatrixBufferSize);
   console.log(performance.now() - start);
   loop(LOOP_SIZE);

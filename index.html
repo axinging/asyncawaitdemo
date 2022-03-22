@@ -7,10 +7,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>  
   <body>
-    <h1>Demo: Uncertainty</h1>
+    <div>
+    <h1>Demo settimeout: Uncertainty</h1>
     <p> When loop runs too long, the measured time of settimeout is incorrect. </p>
     <a href = 'index_time_settimeout.html?loop=1'> Loop 1000000000 </a> 
     <br>
     <a href = 'index_time_settimeout.html?loop=2'> Loop 1000000000*2 </a>
+    <br>
+    <a href = 'index_time_settimeout.html?loop=1&control=1'> Loop 1000000000, no loop after call async timeout </a>
+    </div>
+
+    <div>
+      <h1>Demo webgpu</h1>
+      <p> When loop runs too long, the measured time of settimeout is incorrect. </p>
+      <a href = 'index_time_webgpu.html?loop=1'> Loop 1000000000 </a> 
+      <br>
+      </div>
   </body>
 </html>

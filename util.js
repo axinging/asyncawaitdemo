@@ -4,8 +4,12 @@ function getURLState(url) {
     if (keys.length === 0)
       return null;
     let loop = 1;
+    let control = 0;
     if (params.has('loop')) {
       loop = Number(params.get('loop'));
     }
-    return loop;
+    if (params.has('control')) {
+        control = Number(params.get('control'));
+      }
+    return [loop, control];
   }
