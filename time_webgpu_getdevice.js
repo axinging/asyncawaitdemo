@@ -51,7 +51,7 @@ async function runProgram() {
 const LOOP_SIZE = 1000000000;
 loop(LOOP_SIZE * loopCount);
 runProgram();
-// time of run program() = loop + await getDevice time.
+// time of runProgram = loop + await getDevice time.
 // Possible reason: getDevice happens in the main thread.
 // In this case, main thread has no chance to get device until
 // loop is done.
