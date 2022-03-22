@@ -25,8 +25,9 @@ function loop(max, tag = '') {
 runProgram();
 const LOOP_SIZE = 1000000000;
 console.log("runProgram end");
+console.log("main#loop start");
 loop(LOOP_SIZE);
-console.log("runProgram end2");
+console.log("main#loop end");
 
 async function runProgram() {
   const device = await getDevice();
@@ -327,7 +328,9 @@ async function executeMatmul(device, firstMatrix, secondMatrix, size, useWGSL) {
   let start = performance.now();
   await getBufferData(device, resultMatrixBuffer, resultMatrixBufferSize);
   console.log("getBufferData 2: "+ (performance.now() - start));
+  console.log("getBufferData#loop start");
   loop(LOOP_SIZE);
+  console.log("getBufferData#loop end");
   resultMatrixBuffer.destroy();
 }
 
