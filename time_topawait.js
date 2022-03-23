@@ -18,12 +18,13 @@ async function asyncCall(tag = '') {
   console.log(tag + ' asyncCall time = ' + (end - start));
   console.warn('V8MicroTask #4 Get end time');
 }
+
 (async function() {
   const start = performance.now();
   loop(LOOP_SIZE);
   const end = performance.now();
   console.log(`sync loop (${LOOP_SIZE}) time = ` + (end - start));
-  asyncCall('1st: ');
+  await asyncCall('1st: ');
   // If comment out below, the async is correct.
   // #3 V8Task Loop
   console.warn('V8Task #3 Main');

@@ -13,18 +13,18 @@
     <h3>Demo # no task</h3>
     <a href='time_notask.html'> no Task </a> <text>1st is incorrect. 2nd is correct</text>
     <br>
-    <a href='time_topawait.html'> top await</a> <text>NA</text>
+    <a href='time_topawait.html'> top await</a> <text>1st is correct</text>
     <br>
   </div>
 
   <div>
-    <h3>Demo fetch </h3>
+    <h3>Demo # fetch </h3>
     <a href='time_fetch.html'> Fetch</a> <text>1st is incorrect. 2nd is correct</text>
     <br>
   </div>
 
   <div>
-    <h3>Demo settimeout</h3>
+    <h3>Demo # settimeout</h3>
     <p> When loop runs too long, the measured time of settimeout is incorrect. </p>
     <a href='time_settimeout.html?loop=1'> Loop 1000000000 </a>
     <br>
@@ -34,38 +34,38 @@
     <br> 
     </div>
     <div>
-    <h3>Demo serial or parallel</h3>
+    <h3>Demo # series or parallel</h3>
     <p> Async doesn't gurantee thread parallel. But it will benefit from parallel.</p>
-    <a href='time_serialparallel.html?control=0'> serial await settimeout</a>
+    <a href='time_seriesparallel.html?control=0'> series await settimeout</a>
     <br>
-    <a href='time_serialparallel.html?control=1'> parallel await settimeout</a> <text> async doesn't always mean real Parallel! This is fake parallel</text>
+    <a href='time_seriesparallel.html?control=1'> parallel await settimeout</a> <text> async doesn't always mean real Parallel! This is fake parallel</text>
+    <!--br>
+    <a href='time_seriesparallel2.html?control=0'> series await loop</a> <text> Remove this </text>
     <br>
-    <a href='time_serialparallel2.html?control=0'> serial await loop</a> <text> Remove this </text>
+    <a href='time_seriesparallel2.html?control=1'> parallel await loops</a> <text>Remove this </text-->
     <br>
-    <a href='time_serialparallel2.html?control=1'> parallel await loops</a> <text>Remove this </text>
+    <a href='time_seriesparallel3.html?control=0'> series await nop loop </a>
     <br>
-    <a href='time_serialparallel3.html?control=0'> serial await nop loop </a>
+    <a href='time_seriesparallel3.html?control=1'> parallel await nop loops </a> <text> async doesn't always mean real Parallel! This is not parallel</text>
     <br>
-    <a href='time_serialparallel3.html?control=1'> parallel await nop loops </a> <text> async doesn't always mean real Parallel! This is not parallel</text>
+    <a href='time_seriesparallel_fetch.html?control=0'> series await fetch </a>
     <br>
-    <a href='time_serialparallel_fetch.html?control=0'> serial await fetch </a>
-    <br>
-    <a href='time_serialparallel_fetch.html?control=1'> parallel await fetch </a> <text> async doesn't always mean real Parallel! This is possible parallel</text>
+    <a href='time_seriesparallel_fetch.html?control=1'> parallel await fetch </a> <text> async doesn't always mean real Parallel! This is possible parallel</text>
   </div>
 
   <div>
-    <h3>Demo await await </h3>
+    <h3>Demo # await await </h3>
     <a href='time_awaitawait.html'> await await </a>
     <br>
   </div>
 
   <div>
-    <h3>Demo webgpu# get device</h3>
+    <h3>Demo # webgpu # get device</h3>
     <a href='time_webgpu_getdevice.html?loop=0'> no Loop </a>
     <br>
     <a href='time_webgpu_getdevice.html?loop=1'> Loop 1000000000 </a>
     <br>
-    <h3>Demo webgpu</h3>
+    <h3>Demo # webgpu</h3>
     <p> When loop runs too long, the measured time of settimeout is incorrect. </p>
     <a href='time_webgpu.html?loop=1'> Loop 1000000000 </a>
     <br>
