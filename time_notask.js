@@ -6,19 +6,20 @@ async function loop(max) {
   }
 }
 const LOOP_SIZE = 1000000000;
-async function asyncCall() {
-  console.log('asyncCall start');
+async function asyncCall(tag = '') {
+  console.log(tag + ' asyncCall start');
   const start = performance.now();
   var result = await loop(LOOP_SIZE);
   const end = performance.now();
-  console.log('asyncCall time = ' + (end - start));
+  console.log(tag + ' asyncCall time = ' + (end - start));
 }
 const start = performance.now();
 loop(LOOP_SIZE);
 const end = performance.now();
 console.log(`sync loop (${LOOP_SIZE}) time = ` + (end - start));
-asyncCall();
+asyncCall("1st: ");
 // main loop
 // If comment out below, the async is correct.
 loop(LOOP_SIZE);
+asyncCall("2nd: ");
 console.log('Program end');
