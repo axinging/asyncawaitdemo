@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Async Await Demo#webgpu</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+    <h1>Async Await Demo#webgpu</h1>
+    <script>
+        function justTesting(input) {
+            return new Promise(function (resolve, reject) {
+                // some async operation here
+                setTimeout(function () {
+                    // resolve the promise with some value
+                    resolve(input + 10);
+                }, 500);
+            });
+        }
+
+        console.log(justTesting(22));
+
+        const thenresult = justTesting(29).then(function (val) {
+            // you access the value from the promise here
+            console.log(val);
+        });
+        console.log(thenresult);
+        console.log(Promise.resolve(thenresult));
+
+    </script>
+</body>
+
+</html>
