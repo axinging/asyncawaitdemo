@@ -13,14 +13,13 @@ function resolveAfter2Seconds() {
       resolve('resolved');
     }, 2000);
   });
-  console.log('resolveAfter2Seconds end');
+  // console.log('resolveAfter2Seconds end');
   return promise;
 }
 
 async function asyncCall() {
   console.log('asyncCall start');
   const start = performance.now();
-  console.log('asyncCall start = ' + start);
   var result = await resolveAfter2Seconds();
   const end = performance.now();
   console.log('asyncCall time = ' + (end - start));
