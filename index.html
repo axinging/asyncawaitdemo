@@ -11,7 +11,13 @@
 <body>
   <div>
     <h3>Demo # no task</h3>
-    <a href='index_time_notask.html'> no Task </a>
+    <a href='index_time_notask.html'> no Task </a> <text>1st is incorrect. 2nd is correct</text>
+    <br>
+  </div>
+
+  <div>
+    <h3>Demo fetch </h3>
+    <a href='index_time_fetch.html'> Fetch</a> <text>1st is incorrect. 2nd is correct</text>
     <br>
   </div>
 
@@ -23,8 +29,11 @@
     <a href='index_time_settimeout.html?loop=2'> Loop 1000000000*2 </a>
     <br>
     <a href='index_time_settimeout.html?loop=1&control=1'> Loop 1000000000, no loop after call async timeout </a>
-    <br>
-    <br>
+    <br> 
+    </div>
+    <div>
+    <h3>Demo serial or parallel</h3>
+    <p> Async doesn't gurantee thread parallel. But it will benefit from parallel.</p>
     <a href='index_time_serialparallel.html?control=0'> serial await settimeout</a>
     <br>
     <a href='index_time_serialparallel.html?control=1'> parallel await settimeout</a> <text> async doesn't always mean real Parallel! This is fake parallel</text>
@@ -39,13 +48,7 @@
     <br>
     <a href='index_time_serialparallel_fetch.html?control=0'> serial await fetch </a>
     <br>
-    <a href='index_time_serialparallel_fetch.html?control=1'> parallel await fetch </a> <text> async doesn't always mean real Parallel! This is not parallel</text>
-  </div>
-
-  <div>
-    <h3>Demo fetch </h3>
-    <a href='index_time_fetch.html'> Fetch </a>
-    <br>
+    <a href='index_time_serialparallel_fetch.html?control=1'> parallel await fetch </a> <text> async doesn't always mean real Parallel! This is possible parallel</text>
   </div>
 
   <div>
