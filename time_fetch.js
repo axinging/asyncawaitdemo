@@ -9,6 +9,9 @@ function loop(max, tag = '') {
   }
 }
 
+function log(str) {
+    console.log(str);
+}
 async function fetchData() {
   const response = await fetch('http://127.0.0.1:5501/');
   console.log("after await fetchdata");
@@ -21,8 +24,10 @@ async function foo() {
 }
 async function asyncCall(tag) {
   console.log(tag + 'before await foo, in asyncCall');
+  log("V8Task #1 Main "+ tag);
   const start = performance.now();
   const result = await foo();
+  log("V8MicroTask #1  "+ tag);
   const end = performance.now();
   console.log(tag + 'asyncCall time = ' + (end - start));
 }
@@ -35,6 +40,7 @@ async function asyncCall(tag) {
 }
 
 // First fetch
+log("V8Task #1 Main");
 asyncCall('1st:');
 {
   const start = performance.now();
