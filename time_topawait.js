@@ -25,8 +25,7 @@ async function asyncCall(tag = '') {
   const end = performance.now();
   console.log(`sync loop (${LOOP_SIZE}) time = ` + (end - start));
   await asyncCall('1st: ');
-  // If comment out below, the async is correct.
-  // #3 V8Task Loop
+   // #3 V8Task Loop
   console.warn('V8Task #3 Main');
   console.warn('V8Task #3 Main Loop');
   loop(LOOP_SIZE);

@@ -2,28 +2,22 @@ const LOOP_SIZE = 1000000000;
 function loop(max, tag = '') {
   var sum = 0;
   for (var i = 0; i < max; i++) {
-    // if ((i%(LOOP_SIZE/10) ===0) && tag !== '') {
-    //     console.log( tag + "," + i + ", "  + performance.now());
-    // }
     sum = sum + Math.sqrt(i);
   }
 }
 
 function log(str) {
-    console.log(str);
+    console.warn(str);
 }
 async function fetchData() {
-  const response = await fetch('http://127.0.0.1:5501/');
-  console.log("after await fetchdata");
+  const response = await fetch('./index.html');
 }
 async function foo() {
-  console.log('before await, in foo');
   await fetchData();
-  console.log('after await, in foo');
   return 1;
 }
 async function asyncCall(tag) {
-  console.log(tag + 'before await foo, in asyncCall');
+  console.log(tag + ' asyncCall start');
   log("V8Task #1 Main "+ tag);
   const start = performance.now();
   const result = await foo();
