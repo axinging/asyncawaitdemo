@@ -12,7 +12,7 @@ async function asyncCall(tag = '') {
   console.log(tag + ' asyncCall start');
   const start = performance.now();
   // #2 V8Task Insert MicroTask
-  console.warn("V8Task #2 Insert MicroTask");
+  console.warn("V8Task #2 Insert MicroTask + executor(loop)");
   var result = await loop(LOOP_SIZE);
   const end = performance.now();
   console.log(tag + ' asyncCall time = ' + (end - start));

@@ -25,9 +25,6 @@ async function asyncCall(tag) {
   const result = await foo();
   const end = performance.now();
   console.log(tag + 'asyncCall time = ' + (end - start));
-  console.log(tag + 'after await foo, in asyncCall');
-  console.log(result);
-  console.log(tag + 'after promise, in asyncCall');
 }
 
 {
