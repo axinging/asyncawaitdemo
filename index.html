@@ -30,7 +30,9 @@
     <p> When loop runs too long, the measured time of settimeout is incorrect. </p>
     <a href='time_settimeout.html?loop=1'> Loop 1000000000. </a> <text>Loop time < timeout time, asyncCall is correct</text>
     <br>
-    <a href='time_settimeout.html?loop=2'> Loop 1000000000*2. </a><text>Loop time > timeout time, asyncCall is incorrect </text>>
+    <a href='time_settimeout.html?loop=2'> Loop 1000000000*2. </a><text>Loop time > timeout time, asyncCall is incorrect </text>
+    <br>
+    <a href='time_settimeout_topawait.html?loop=2'> Loop 1000000000*2, topawait. </a><text>Loop time > timeout time, asyncCall is correct in topawait</text>
     <br>
     <a href='time_settimeout.html?loop=1&control=1'> Loop 1000000000, no loop after call async timeout </a>
     <br> 
