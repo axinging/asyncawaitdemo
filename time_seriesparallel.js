@@ -6,32 +6,33 @@ function wait(ms) {
 
 async function series() {
   const start = performance.now();
-  await wait("1st: ");
+  await wait('1st: ');
   const start2 = performance.now();
-  console.log("series#wait 1: " + (start2-start));
-  await wait("2nd: ");
+  console.log('series#wait 1: ' + (start2 - start));
+  await wait('2nd: ');
   const end = performance.now();
-  console.log("series#wait 2: " + (end-start2));
-  console.log("series#wait 1+2: " + (end-start));
+  console.log('series#wait 2: ' + (end - start2));
+  console.log('series#wait 1+2: ' + (end - start));
   return 'done!';
 }
 
 
 async function parallel() {
-  const wait1 = wait("1st: ");
-  const wait2 = wait("2nd: ");
+  const wait1 = wait('1st: ');
+  const wait2 = wait('2nd: ');
   const start = performance.now();
   await wait1;
   const start2 = performance.now();
-  console.log("parallel#wait 1: " + (start2-start));
+  console.log('parallel#wait 1: ' + (start2 - start));
   await wait2;
   const end = performance.now();
-  console.log("parallel#wait 2: " + (end-start2));
-  console.log("parallel#wait 1+2: " + (end-start));
+  console.log('parallel#wait 2: ' + (end - start2));
+  console.log('parallel#wait 1+2: ' + (end - start));
   return 'done!';
 }
 
 
-if (control == 0) series();
-else parallel();
-
+if (control == 0)
+  series();
+else
+  parallel();
