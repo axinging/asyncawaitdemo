@@ -2,7 +2,7 @@ const [loopCount, control] = getURLState(location.search);
 function loop(max) {
   var sum = 0;
   for (var i = 0; i < max; i++) {
-    if (i == 100) console.log(i);
+    // if (i == 100) console.log(i);
     sum = sum + Math.sqrt(i);
   }
 }
@@ -10,7 +10,7 @@ function loop(max) {
 async function nop() {}
 */
 async function fetchData(tag) {
-    const url = tag == "1st: "?'http://127.0.0.1:5501/bigfile.json': 'http://127.0.0.1:5501/bigfile2.json';
+    const url = tag == "1st: "?'./bigfile.json': './bigfile2.json';
     const response = await fetch(url);
     console.log("after await fetchdata");
 }
@@ -37,7 +37,6 @@ async function series() {
   console.log("series#wait 1+2: " + (end-start));
   return 'done!';
 }
-
 
 async function parallel() {
   const wait1 = wait("1st: ");

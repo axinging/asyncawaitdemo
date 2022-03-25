@@ -2,7 +2,7 @@ const [loopCount, control] = getURLState(location.search);
 function loop(max) {
   var sum = 0;
   for (var i = 0; i < max; i++) {
-    if (i == 100) console.log(i);
+    // if (i == 100) console.log(i);
     sum = sum + Math.sqrt(i);
   }
 }
