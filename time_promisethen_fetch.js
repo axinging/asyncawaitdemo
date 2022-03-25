@@ -9,7 +9,7 @@ const LOOP_SIZE = 1000000000;
 (async function() {
   const fetchPromise = fetch('./index.html');
   const ret1 = fetchPromise.then(response => {
-    console.log("Microtask1 # posted by Chromium network");
+    console.log('Microtask1 # posted by Chromium network');
     return true;
   });
 

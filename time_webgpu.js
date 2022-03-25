@@ -23,7 +23,7 @@ function loop(max, tag = '') {
 */
 
 runProgram();
-const LOOP_SIZE = 1000000000;
+const LOOP_SIZE = 1000000000*2;
 console.log("runProgram end");
 console.log("main#loop start");
 loop(LOOP_SIZE);
