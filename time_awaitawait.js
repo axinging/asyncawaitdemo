@@ -1,10 +1,8 @@
 async function loop(max) {
   var sum = 0;
   for (var i = 0; i < max; i++) {
-    // if (i == 100) console.log("loop");
     sum = sum + Math.sqrt(i);
   }
-  // await loop2(max);
 }
 
 async function loop2(max) {
