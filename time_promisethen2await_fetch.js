@@ -1,4 +1,4 @@
-async function loop(max) {
+function loop(max) {
   var sum = 0;
   for (var i = 0; i < max; i++) {
     sum = sum + Math.sqrt(i);
@@ -10,7 +10,7 @@ async function fetchData() {
   console.log("Main # Post MicroTask1 # In Promise new ");
   const response = await fetch('./index.html');
   // 1. Main thread post task to network; 
-  // 2. When network thread is done, post MicroTask into main thread.
+  // 2. When network thread is done, post task into main thread. This task will resolve the promise.
   console.log("Microtask1 # posted by Chromium network");
   return true;
 }

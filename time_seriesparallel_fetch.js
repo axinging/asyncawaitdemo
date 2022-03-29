@@ -34,7 +34,7 @@ async function series() {
   await wait("2nd: ");
   const end = performance.now();
   console.log('series#wait 2: ' + (end - start2));
-  console.log("series#wait 1+2: " + (end-start));
+  console.log("series#wait 1+2: " + (end - start));
   return 'done!';
 }
 
