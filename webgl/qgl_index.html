@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>WebGL Demo</title>
+    <link rel="stylesheet" href="./webgl.css" type="text/css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"
+        integrity="sha512-zhHQR0/H5SEBL3Wn6yYSaTTZej12z0hVZKOv3TwCUXT1z5qeqGcXJLLrbERYRScEDDpYIJhPC1fk31gqR783iQ=="
+        crossorigin="anonymous">
+        </script>
+    <script src="qgl_query.js" crossorigin="anonymous">
+    </script>
+</head>
+
+<body>
+    <canvas id="glcanvas" width="1920" height="480"></canvas>
+</body>
+<script>
+    function getURLState(url) {
+        let params = new URLSearchParams(url);
+        const keys = [...params.keys()];
+        if (keys.length === 0) return null;
+        let timestamp = 1;
+        let webglVersion = 1;
+        if (params.has('timestamp')) {
+            timestamp = Number(params.get('timestamp'));
+        }
+        if (params.has('webglversion')) {
+            webglVersion = Number(params.get('webglversion'));
+        }
+        return [timestamp, webglVersion];
+    }
+
+    const [isTimestamp, webglVersion] = getURLState(location.search);
+    main();
+
+    //
+    // Start here
+    //
+    function main() {
+        const canvas = document.querySelector('#glcanvas');
+        const gl = webglVersion == 1 ? canvas.getContext('webgl') :
+            canvas.getContext('webgl2');
+
+        // If we don't have a GL context, give up now
+
+        if (!gl) {
+            alert(
+                'Unable to initialize WebGL. Your browser or machine may not support it.');
+            return;
+        }
+
+        // Draw the scene
+        drawScene(gl);
+    }
+
+    function drawWithGL(gl) {
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
+        gl.clearDepth(1.0);                 // Clear everything
+        gl.enable(gl.DEPTH_TEST);           // Enable depth testing
+        gl.depthFunc(gl.LEQUAL);            // Near things obscure far things
+
+        // Clear the canvas before we start drawing on it.
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    }
+    //
+    // Draw the scene.
+    //
+    function drawScene(gl) {
+        const ext = qglGetGLExtension(gl);
+        qglGetQueryCounterBits(gl, ext);
+        {
+            const query = qglTimestampQuery(gl, ext);
+            drawWithGL(gl);
+            const query2 = qglTimestampQuery(gl, ext);
+            //gl.flush();
+            sleep(qglGetTimestampQueryResult, gl, ext, query, "query");
+            sleep(qglGetTimestampQueryResult, gl, ext, query2, "query");
+        }
+        {
+            const query = qglTimestampQuery(gl, ext);
+            //gl.flush();
+            drawWithGL(gl);
+            wait(500);
+            const query2 = qglTimestampQuery(gl, ext);
+            //gl.flush();
+            sleep(qglGetTimestampQueryResult, gl, ext, query, "query gpu and cpu");
+            sleep(qglGetTimestampQueryResult, gl, ext, query2, "query gpu and cpu");
+        }
+        {
+            const query = qglTimestampQuery(gl, ext);
+            gl.flush();
+            drawWithGL(gl);
+            wait(500);
+            const query2 = qglTimestampQuery(gl, ext);
+            gl.flush();
+            sleep(qglGetTimestampQueryResult, gl, ext, query, "query gpu and cpu with flush");
+            sleep(qglGetTimestampQueryResult, gl, ext, query2, "query gpu and cpu with flush");
+        }
+        {
+            const query = qglTimestampQuery(gl, ext);
+            gl.flush();
+            drawWithGL(gl);
+            wait(500);
+            const query2 = qglTimestampQuery(gl, ext);
+            gl.flush();
+            sleep(qglGetMultipleTimestampQueryResult, gl, ext, [query, query2], "multiple query gpu and cpu with flush");
+        }
+    }
+</script>
+
+</html>
