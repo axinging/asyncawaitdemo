@@ -20,7 +20,7 @@
     function getURLState(url) {
         let params = new URLSearchParams(url);
         const keys = [...params.keys()];
-        if (keys.length === 0) return null;
+        if (keys.length === 0) return [true, 1];
         let timestamp = 1;
         let webglVersion = 1;
         if (params.has('timestamp')) {
@@ -52,7 +52,9 @@
         }
 
         // Draw the scene
-        drawScene(gl);
+        for (let i =0 ; i < 1000;i++) {
+            drawScene2(gl);
+        }
     }
 
     function drawWithGL(gl) {
@@ -68,6 +70,20 @@
     //
     // Draw the scene.
     //
+    function drawScene2(gl) {
+        const ext = qglGetGLExtension(gl);
+        qglGetQueryCounterBits(gl, ext);
+        {
+            const query = qglTimestampQuery(gl, ext);
+            gl.flush();
+            drawWithGL(gl);
+            wait(10);
+            const query2 = qglTimestampQuery(gl, ext);
+            gl.flush();
+            sleep(qglGetMultipleTimestampQueryResult, gl, ext, [query, query2], "multiple query gpu and cpu with flush");
+        }
+    }
+
     function drawScene(gl) {
         const ext = qglGetGLExtension(gl);
         qglGetQueryCounterBits(gl, ext);
