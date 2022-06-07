@@ -223,7 +223,9 @@
                 fromPixels2DContext.drawImage(
                     pixels, 0, 0, width, height);
                 const start = performance.now();
+                console.time("getImageData");
                 vals = fromPixels2DContext.getImageData(0, 0, width, height).data;
+                console.timeEnd("getImageData");
                 const end = performance.now();
                 time = (end - start);
             }
@@ -231,6 +233,7 @@
             if (numChannels === 4) {
                 values = new Int32Array(vals);
             } else {
+                console.time("dataPadding");
                 const numPixels = width * height;
                 values = new Int32Array(numPixels * numChannels);
                 for (let i = 0; i < numPixels; i++) {
@@ -238,6 +241,7 @@
                         values[i * numChannels + channel] = vals[i * 4 + channel];
                     }
                 }
+                console.timeEnd("dataPadding");
             }
             const outShape = [height, width, numChannels];
             const end = performance.now();
