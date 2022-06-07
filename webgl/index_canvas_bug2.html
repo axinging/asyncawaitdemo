@@ -1,0 +1,339 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0, user-scalable=no">
+
+<body>
+    <div id="info" style='display:none'></div>
+    <div id="predictions"></div>
+
+    <video id="video" playsinline style="
+    -webkit-transform: scaleX(-1);
+    transform: scaleX(-1);
+    display: none;
+    width: auto;
+    height: auto;
+    ">
+    </video>
+    <canvas id="output" style=""></canvas>
+    <canvas id="hand_cut" style=""></canvas>
+    <div id="status"></div>
+    <!--script src="https://unpkg.com/@tensorflow/tfjs-core@latest/dist/tf-core.js" crossorigin></script-->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.0.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>
+    <script>
+
+        function getURLState(url) {
+            let params = new URLSearchParams(url);
+            const keys = [...params.keys()];
+            if (keys.length === 0) return [false, false];
+            let recreate = false;
+            if (params.has('recreate')) {
+                recreate = true;
+            }
+            let willReadFrequently = false;
+            if (params.has('readfreq')) {
+                willReadFrequently = params.get('readfreq') == 'true';
+            }
+            return [recreate, willReadFrequently];
+        }
+        async function loadImage(imageUrl) {
+            const image = new Image();
+            const promise = new Promise((resolve, reject) => {
+                image.crossOrigin = '';
+                image.onload = () => {
+                    resolve(image);
+                };
+            });
+
+            image.src = imageUrl;
+            return promise;
+        }
+
+        function consoleLogArray(array, printLen = 3, comment = '') {
+            if (printLen > array.length) {
+                throw new Error("Print len is bigger than array.length");
+            }
+            console.log(comment + array.slice(0, printLen).toString());
+        }
+
+        let fromPixels2DContext2 = null;
+        function fromPixelsLike2_(pixels, numChannels = 3, recreateContext = false, willReadFrequently = false) {
+            let time = 0;
+            // Sanity checks.
+            if (numChannels > 4) {
+                throw new Error(
+                    'Cannot construct Tensor with more than 4 channels from pixels.');
+            }
+            if (pixels == null) {
+                throw new Error('pixels passed to tf.browser.fromPixels() can not be null');
+            }
+            let isImage = false;
+            if (
+                typeof (HTMLImageElement) !== 'undefined' &&
+                pixels instanceof HTMLImageElement) {
+                isImage = true;
+            }
+
+            const [width, height] = [pixels.width, pixels.height];
+            let vals;
+
+            if (isImage) {
+                if (fromPixels2DContext2 == null || recreateContext == true) {
+                    console.log("Get Context");
+                    fromPixels2DContext2 = document.createElement('canvas').getContext('2d', { willReadFrequently });
+                }
+                fromPixels2DContext2.canvas.width = width;
+                fromPixels2DContext2.canvas.height = height;
+                fromPixels2DContext2.drawImage(
+                    pixels, 0, 0, width, height);
+                const start = performance.now();
+                vals = fromPixels2DContext2.getImageData(0, 0, width, height).data;
+                const end = performance.now();
+                time = (end - start);
+            }
+            let values;
+            if (numChannels === 4) {
+                values = new Int32Array(vals);
+            } else {
+                const numPixels = width * height;
+                values = new Int32Array(numPixels * numChannels);
+                for (let i = 0; i < numPixels; i++) {
+                    for (let channel = 0; channel < numChannels; ++channel) {
+                        values[i * numChannels + channel] = vals[i * 4 + channel];
+                    }
+                }
+            }
+            const outShape = [height, width, numChannels];
+            return [tf.tensor3d(values, outShape, 'int32'), time];
+        }
+
+        let fromPixels2DContext = null;
+        function fromPixelsLike_(
+            pixels, recreateContext = false, willReadFrequently = false) {
+            const numChannels = 3
+            // Sanity checks.
+            if (numChannels > 4) {
+                throw new Error(
+                    'Cannot construct Tensor with more than 4 channels from pixels.');
+            }
+            if (pixels == null) {
+                throw new Error('pixels passed to tf.browser.fromPixels() can not be null');
+            }
+            let isPixelData = false;
+            let isImageData = false;
+            let isVideo = false;
+            let isImage = false;
+            let isCanvasLike = false;
+            let isImageBitmap = false;
+            if ((pixels).data instanceof Uint8Array) {
+                isPixelData = true;
+            } else if (
+                typeof (ImageData) !== 'undefined' && pixels instanceof ImageData) {
+                isImageData = true;
+            } else if (
+                typeof (HTMLVideoElement) !== 'undefined' &&
+                pixels instanceof HTMLVideoElement) {
+                isVideo = true;
+            } else if (
+                typeof (HTMLImageElement) !== 'undefined' &&
+                pixels instanceof HTMLImageElement) {
+                isImage = true;
+                // tslint:disable-next-line: no-any
+            } else if ((pixels).getContext != null) {
+                isCanvasLike = true;
+            } else if (
+                typeof (ImageBitmap) !== 'undefined' && pixels instanceof ImageBitmap) {
+                isImageBitmap = true;
+            } else {
+                throw new Error(
+                    'pixels passed to tf.browser.fromPixels() must be either an ' +
+                    `HTMLVideoElement, HTMLImageElement, HTMLCanvasElement, ImageData ` +
+                    `in browser, or OffscreenCanvas, ImageData in webworker` +
+                    ` or {data: Uint32Array, width: number, height: number}, ` +
+                    `but was ${(pixels).constructor.name}`);
+            }
+            if (isVideo) {
+                const HAVE_CURRENT_DATA_READY_STATE = 2;
+                if (isVideo &&
+                    (pixels).readyState <
+                    HAVE_CURRENT_DATA_READY_STATE) {
+                    throw new Error(
+                        'The video element has not loaded data yet. Please wait for ' +
+                        '`loadeddata` event on the <video> element.');
+                }
+            }
+
+            const [width, height] = isVideo ?
+                [
+                    (pixels).videoWidth,
+                    (pixels).videoHeight
+                ] :
+                [pixels.width, pixels.height];
+            let vals;
+
+            if (isCanvasLike) {
+                vals =
+                    // tslint:disable-next-line:no-any
+                    (pixels).getContext('2d').getImageData(0, 0, width, height).data;
+            } else if (isImageData || isPixelData) {
+                vals = (pixels).data;
+            } else if (isImage || isVideo || isImageBitmap) {
+                if (fromPixels2DContext == null) {
+                    if (typeof document === 'undefined') {
+                        if (typeof OffscreenCanvas !== 'undefined' &&
+                            typeof OffscreenCanvasRenderingContext2D !== 'undefined') {
+                            // @ts-ignore
+                            fromPixels2DContext = new OffscreenCanvas(1, 1).getContext('2d');
+                        } else {
+                            throw new Error(
+                                'Cannot parse input in current context. ' +
+                                'Reason: OffscreenCanvas Context2D rendering is not supported.');
+                        }
+                    } else {
+                        fromPixels2DContext =
+                            document.createElement('canvas').getContext(
+                                '2d', { willReadFrequently });
+                    }
+                }
+                fromPixels2DContext.canvas.width = width;
+                fromPixels2DContext.canvas.height = height;
+                fromPixels2DContext.drawImage(
+                    pixels, 0, 0, width, height);
+                vals = fromPixels2DContext.getImageData(0, 0, width, height).data;
+            }
+            let values;//Int32Array;
+            if (numChannels === 4) {
+                values = new Int32Array(vals);
+            } else {
+                const numPixels = width * height;
+                values = new Int32Array(numPixels * numChannels);
+                for (let i = 0; i < numPixels; i++) {
+                    for (let channel = 0; channel < numChannels; ++channel) {
+                        values[i * numChannels + channel] = vals[i * 4 + channel];
+                    }
+                }
+            }
+            const outShape = [height, width, numChannels];
+            const end = performance.now();
+            return tf.tensor3d(values, outShape, 'int32');
+        }
+
+        async function fromPixelLike(url, recreateContext = false, willReadFrequently = false) {
+            //const imageName = 'tennis_standing_128.jpg';
+            //const imageUrl = `https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_standing.jpg`;
+            const image = await loadImage(url);
+            const start = performance.now();
+            const imageData = fromPixelsLike_(image, 3, recreateContext, willReadFrequently);
+            const end = performance.now();
+            const time = (end - start);
+            return [imageData, time];
+        }
+
+        async function fromPixelLike2(url, recreateContext = false, willReadFrequently = false) {
+            //const imageName = 'tennis_standing_128.jpg';
+            //const imageUrl = `https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_standing.jpg`;
+            const image = await loadImage(url);
+            const start = performance.now();
+            const imageData = fromPixelsLike2_(image, 3, recreateContext, willReadFrequently);
+            const end = performance.now();
+            const time = (end - start);
+            return [imageData, time];
+        }
+
+        async function fromPixelTFJS(url, recreateContext = false, willReadFrequently = false) {
+            //const imageName = 'tennis_standing_128.jpg';
+            //const imageUrl = `https://storage.googleapis.com/tfjs-models/assets/posenet/tennis_standing.jpg`;
+            const image = await loadImage(url);
+            const start = performance.now();
+            const imageData = tf.browser.fromPixels(image);
+            const end = performance.now();
+            const time = (end - start);
+            return [imageData, time];
+        }
+
+        async function singleTestLike(url, recreateContext = false, willReadFrequently = false) {
+            let times = [];
+            for (let i = 0; i < 10; i++) {
+                const [fpImage1, time] = await fromPixelLike(url, recreateContext, willReadFrequently);
+                await fpImage1.data()[0];
+                times.push(time);
+            }
+            let sum = times.reduce((a, b) => a + b, 0);
+            let avg = (sum / times.length) || 0;
+            console.log(times);
+            console.log("average: " + avg);
+            fromPixels2DContext = null;
+        }
+
+
+        async function singleTestLike2(url, recreateContext = false, willReadFrequently = false) {
+            let times = [];
+            for (let i = 0; i < 10; i++) {
+                const [fpImage1, time] = await fromPixelLike2(url, recreateContext, willReadFrequently);
+                await fpImage1.data()[0];
+                times.push(time);
+            }
+            let sum = times.reduce((a, b) => a + b, 0);
+            let avg = (sum / times.length) || 0;
+            console.log(times);
+            console.log("average: " + avg);
+            fromPixels2DContext = null;
+        }
+
+        async function singleTestTFJS(url, recreateContext = false, willReadFrequently = false) {
+            let times = [];
+            for (let i = 0; i < 10; i++) {
+                const [fpImage1, time] = await fromPixelTFJS(url, recreateContext, willReadFrequently);
+                await fpImage1.data()[0];
+                times.push(time);
+            }
+            let sum = times.reduce((a, b) => a + b, 0);
+            let avg = (sum / times.length) || 0;
+            console.log(times);
+            console.log("average: " + avg);
+            fromPixels2DContext = null;
+        }
+
+        async function testFromPixelLike() {
+            tf.setBackend('wasm');
+            let [recreate, willReadFrequently] = getURLState(window.location.search);
+            let url;
+
+            willReadFrequently = true;
+            url = 'pic720p.jpg';
+            console.log("Like TFJS: recreate =" + recreate + ", willReadFrequently=" + willReadFrequently);
+            await singleTestLike(url, recreate, willReadFrequently);
+            willReadFrequently = false;
+            console.log("Like TFJS: recreate =" + recreate + ", willReadFrequently=" + willReadFrequently);
+            await singleTestLike(url, recreate, willReadFrequently);
+
+
+            willReadFrequently = true;
+            url = 'pic720p.jpg';
+            console.log("Like TFJS2: recreate =" + recreate + ", willReadFrequently=" + willReadFrequently);
+            await singleTestLike2(url, recreate, willReadFrequently);
+            willReadFrequently = false;
+            console.log("Like TFJS: recreate =" + recreate + ", willReadFrequently=" + willReadFrequently);
+            await singleTestLike2(url, recreate, willReadFrequently);
+        }
+
+        async function testFromPixel() {
+            let backend = 'wasm';
+            tf.setBackend(backend);
+            url = 'pic720p.jpg';
+            console.log("TFJS: backend = " + backend);
+            await singleTestTFJS(url);
+            backend = 'webgl';
+            console.log("TFJS: backend = " + backend);
+            tf.setBackend(backend);
+            await singleTestTFJS(url);
+        }
+
+
+        const bindPage = async () => {
+            await testFromPixelLike();
+            await testFromPixel();
+        }
+        bindPage();
+
+    </script>
+</body>
