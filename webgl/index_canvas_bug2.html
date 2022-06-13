@@ -57,65 +57,6 @@
 		
 		let fromPixels2DContext = null;
 
-        function fromPixelsLikeSimplified_(pixels, numChannels = 3, recreateContext = false, willReadFrequently = false) {
-            let time = 0;
-            // Sanity checks.
-            if (numChannels > 4) {
-                throw new Error(
-                    'Cannot construct Tensor with more than 4 channels from pixels.');
-            }
-            if (pixels == null) {
-                throw new Error('pixels passed to tf.browser.fromPixels() can not be null');
-            }
-            let isImage = false;
-            if (
-                typeof (HTMLImageElement) !== 'undefined' &&
-                pixels instanceof HTMLImageElement) {
-                isImage = true;
-            }
-
-            const [width, height] = [pixels.width, pixels.height];
-            let vals;
-
-            if (isImage) {
-                if (fromPixels2DContext == null || recreateContext == true) {
-                    console.log("Get Context");
-                    fromPixels2DContext = document.createElement('canvas').getContext('2d', { willReadFrequently });
-                }
-                fromPixels2DContext.canvas.width = width;
-                fromPixels2DContext.canvas.height = height;
-                fromPixels2DContext.drawImage(
-                    pixels, 0, 0, width, height);
-                const start = performance.now();
-                vals = fromPixels2DContext.getImageData(0, 0, width, height).data;
-                const end = performance.now();
-                time = (end - start);
-            }
-            let values;
-            if (numChannels === 4) {
-                values = new Int32Array(vals);
-            } else {
-                const numPixels = width * height;
-                values = new Int32Array(numPixels * numChannels);
-                for (let i = 0; i < numPixels; i++) {
-                    for (let channel = 0; channel < numChannels; ++channel) {
-                        values[i * numChannels + channel] = vals[i * 4 + channel];
-                    }
-                }
-            }
-            const outShape = [height, width, numChannels];
-            return [tf.tensor3d(values, outShape, 'int32'), time];
-        }
-
-        async function fromPixelLikeSimplified(url, recreateContext = false, willReadFrequently = false) {
-            const image = await loadImage(url);
-            // const start = performance.now();
-            const [imageData, time] = fromPixelsLikeSimplified_(image, 3, recreateContext, willReadFrequently);
-            const end = performance.now();
-            // const time = (end - start);
-            return [imageData, time];
-        }
-
         async function singleTest(fromPixelOp, url, recreateContext = false, willReadFrequently = false) {
             let times = [];
             for (let i = 0; i <10; i ++) {
@@ -254,7 +195,7 @@
             const [imageData, time] = fromPixelsLike_(image, 3, recreateContext, willReadFrequently);
             const end = performance.now();
             const time2 = (end - start);
-            console.log(time2);
+            //console.log(time2);
             return [imageData, time];
         }
 
@@ -264,23 +205,10 @@
             const image = await loadImage(url);
             const start = performance.now();
             const imageData = tf.browser.fromPixels(image);
+            await imageData.data();
             const end = performance.now();
             const time = (end - start);
             return [imageData, time];
-        }
-
-        async function singleTestTFJS(url, recreateContext = false, willReadFrequently = false) {
-            let times = [];
-            for (let i = 0; i < 10; i++) {
-                const [fpImage1, time] = await fromPixelTFJS(url, recreateContext, willReadFrequently);
-                await fpImage1.data()[0];
-                times.push(time);
-            }
-            let sum = times.reduce((a, b) => a + b, 0);
-            let avg = (sum / times.length) || 0;
-            console.log(times);
-            console.log("average: " + avg);
-            fromPixels2DContext = null;
         }
 
         async function testFromPixelLike() {
@@ -298,21 +226,6 @@
             await singleTest(fromPixelLike, url, recreate, willReadFrequently);
         }
 
-        async function testFromPixelLikeSimplified() {
-            tf.setBackend('wasm');
-            await tf.ready();
-            let [recreate, willReadFrequently] = getURLState(window.location.search);
-            let url;
-
-            willReadFrequently = true;
-            url = 'pic720p.jpg';
-            console.log("Like TFJS2: recreate =" + recreate + ", willReadFrequently=" + willReadFrequently);
-            await singleTest(fromPixelLikeSimplified, url, recreate, willReadFrequently);
-            willReadFrequently = false;
-            console.log("Like TFJS2: recreate =" + recreate + ", willReadFrequently=" + willReadFrequently);
-            await singleTest(fromPixelLikeSimplified,url, recreate, willReadFrequently);
-        }
-
         async function testFromPixelTFJS() {
             let backend = 'wasm';
             tf.setBackend(backend);
@@ -328,7 +241,6 @@
 
         const bindPage = async () => {
             await testFromPixelLike();
-            // await testFromPixelLikeSimplified();
             await testFromPixelTFJS();
         }
         bindPage();
