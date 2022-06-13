@@ -19,6 +19,7 @@
     <!--script src="https://unpkg.com/@tensorflow/tfjs-core@latest/dist/tf-core.js" crossorigin></script-->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.0.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-wasm/dist/tf-backend-wasm.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgpu/dist/tf-backend-webgpu.js"></script>
     <script>
 
         function getURLState(url) {
@@ -56,10 +57,11 @@
         }
 		
 		let fromPixels2DContext = null;
+        const testRepeat = 50;
 
         async function singleTest(fromPixelOp, url, recreateContext = false, willReadFrequently = false) {
             let times = [];
-            for (let i = 0; i <10; i ++) {
+            for (let i = 0; i < testRepeat; i ++) {
                 const [fpImage1, time] = await fromPixelOp(url, recreateContext, willReadFrequently);
                 await fpImage1.data()[0];
                 times.push(time);
@@ -74,7 +76,8 @@
         function fromPixelsLike_(
             pixels, recreateContext = false, willReadFrequently = false) {
             let time = 0;
-            const numChannels = 3
+            const start = performance.now();
+            const numChannels = 3;
             // Sanity checks.
             if (numChannels > 4) {
                 throw new Error(
@@ -163,18 +166,16 @@
                 fromPixels2DContext.canvas.height = height;
                 fromPixels2DContext.drawImage(
                     pixels, 0, 0, width, height);
-                const start = performance.now();
-                console.time("getImageData");
+                //console.time("getImageData");
                 vals = fromPixels2DContext.getImageData(0, 0, width, height).data;
-                console.timeEnd("getImageData");
-                const end = performance.now();
-                time = (end - start);
+                //console.timeEnd("getImageData");
+
             }
             let values;//Int32Array;
             if (numChannels === 4) {
                 values = new Int32Array(vals);
             } else {
-                console.time("dataPadding");
+                //console.time("dataPadding");
                 const numPixels = width * height;
                 values = new Int32Array(numPixels * numChannels);
                 for (let i = 0; i < numPixels; i++) {
@@ -182,10 +183,11 @@
                         values[i * numChannels + channel] = vals[i * 4 + channel];
                     }
                 }
-                console.timeEnd("dataPadding");
+                //console.timeEnd("dataPadding");
             }
             const outShape = [height, width, numChannels];
             const end = performance.now();
+            time = (end - start);
             return [tf.tensor3d(values, outShape, 'int32'), time];
         }
 
@@ -236,6 +238,13 @@
             backend = 'webgl';
             console.log("TFJS: backend = " + backend);
             tf.setBackend(backend);
+            await tf.ready();
+            await singleTest(fromPixelTFJS, url);
+
+            backend = 'webgpu';
+            console.log("TFJS: backend = " + backend);
+            tf.setBackend(backend);
+            await tf.ready();
             await singleTest(fromPixelTFJS, url);
         }
 
