@@ -229,12 +229,22 @@
         }
 
         async function testFromPixelTFJS() {
-            let backend = 'wasm';
+            let backend;
+
+            backend = 'cpu';
             tf.setBackend(backend);
             await tf.ready();
             url = 'pic720p.jpg';
             console.log("TFJS: backend = " + backend);
             await singleTest(fromPixelTFJS, url);
+
+            backend = 'wasm';
+            tf.setBackend(backend);
+            await tf.ready();
+            url = 'pic720p.jpg';
+            console.log("TFJS: backend = " + backend);
+            await singleTest(fromPixelTFJS, url);
+
             backend = 'webgl';
             console.log("TFJS: backend = " + backend);
             tf.setBackend(backend);
