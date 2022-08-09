@@ -1,0 +1,287 @@
+<!-- Copyright 2019 Google LLC. All Rights Reserved.
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+==============================================================================-->
+
+<html>
+
+<head>
+  <title>TensorFlow.js Op demo</title>
+</head>
+
+<body>
+  <h2>TensorFlow.js Op demo</h2>
+  <div> Parameter: index_model.html?backend=webgpu&localBuild=webgl,webgpu,core </div>
+  <script src="loader.js"></script>
+  <script>
+    'use strict';
+    const tensorflow_DataType_DT_INT32 = 3;
+
+    async function runTFJS(SIGNATURE) {
+      let model;//: GraphModel;
+
+      const weightsManifest =
+        [{ 'name': 'Const', 'dtype': 'int32', 'shape': [2, 1] }];
+
+      const SIMPLE_MODEL = {//}: tensorflow.IGraphDef = {
+        node: [
+          {
+            name: 'Input',
+            op: 'Placeholder',
+            attr: {
+              dtype: {
+                type: tensorflow_DataType_DT_INT32,
+              },
+              shape: { shape: { dim: [{ size: -1 }, { size: 1 }] } }
+            }
+          },
+          {
+            name: 'Const',
+            op: 'Const',
+            attr: {
+              dtype: { type: tensorflow_DataType_DT_INT32 },
+              value: {
+                tensor: {
+                  dtype: tensorflow_DataType_DT_INT32,
+                  tensorShape: { dim: [{ size: 1 }] },
+                }
+              },
+              index: { i: 0 },
+              length: { i: 4 }
+            }
+          },
+          { name: 'Add1', op: 'Add', input: ['Input', 'Const'], attr: {} },
+          { name: 'Add2', op: 'Add', input: ['Add1', 'Const'], attr: {} },
+          { name: 'Add', op: 'Add', input: ['Add2', 'Const'], attr: {} } // Default output node
+        ],
+        versions: { producer: 1.0, minConsumer: 3 }
+      };
+      /*
+      Outputs: null
+      Outputs: Add
+
+      Outputs: Add1
+
+      Outputs: Add2
+      {"0":7,"1":11}
+      */
+
+      const customLoader = { // : tfc.io.IOHandlerSync = {
+        load: () => {
+          return {
+            modelTopology: SIMPLE_MODEL,
+            weightSpecs: weightsManifest,
+            weightData: new Int32Array([3, 5]).buffer,
+            userDefinedMetadata: { signature: SIGNATURE }
+          };
+        }
+      };
+      const start = tf.memory().numTensors;
+      model = await tf.loadGraphModel(customLoader);
+      const start1 = tf.memory().numTensors;
+      const input = tf.tensor2d([1, 1], [2, 1], 'int32');
+      const output = model.predict(input);
+      console.log(JSON.stringify(await output.data()));
+      const start2 = tf.memory().numTensors;
+      input.dispose();
+      output.dispose();
+      const start3 = tf.memory().numTensors;
+      // Dispose tensor kept by load.
+      model.dispose();
+      // 
+      //tf.backend().dispose();
+
+      const start4 = tf.memory().numTensors;
+      console.log("start = " + start + ", start1 = " + start1+ ", start2 = " + (start2)
+      + ", start3 = " + start3+ ", start4 = " + (start4));
+      // const saveResult = await model.save('downloads://abc');
+      //console.log(saveResult);
+    }
+
+    async function loadWeightsFile(file) { // Promise<ArrayBuffer> 
+      return new Promise((resolve, reject) => {
+        const weightFileReader = new FileReader();
+        weightFileReader.onload = (event) => {
+          // tslint:disable-next-line:no-any
+          const weightData = (event.target).result;//  as ArrayBuffer;
+          var array = new Int32Array(weightData);
+          console.log(JSON.stringify(array));
+          resolve(weightData);
+        };
+        weightFileReader.onerror = error =>
+          reject(`Failed to weights data from file of path '${file}'.`);
+        weightFileReader.readAsArrayBuffer(file);
+      });
+    }
+
+    async function httpTest() {
+      // Calling io.http() method
+      const result = tf.io.http('demo.json');
+        
+      // Printing output
+      const tmp = await result.load();
+      const buffer = tmp.weightData;
+      let view = new Int32Array(buffer);
+      console.log(JSON.stringify(view));
+    }
+
+
+    async function tensorTest() {
+      {
+        console.log("Case will leak");
+        const start = tf.memory().numTensors;
+        const aData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+        const dtype = 'float32';
+        let a = tf.tensor2d(aData, [8, 2], dtype);
+        a = null;
+        const end = tf.memory().numTensors;
+        console.log("start = " + start + ", end = " + end+ ", leak = " + (end-start));
+      }
+      {
+        console.log("Case add will leak");
+        const start = tf.memory().numTensors;
+        const aData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+        const dtype = 'float32';
+        const b =
+          new Float32Array([1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4]);
+        const a = tf.tensor2d(aData, [8, 2], dtype);
+        const result = tf.add(a, tf.tensor2d(b, [8, 2]));
+        await result.data();
+        result.dispose();
+        a.dispose();
+        const end = tf.memory().numTensors;
+        console.log("start = " + start + ", end = " + end+ ", leak = " + (end-start));
+      }
+      {
+        console.log("Case add will leak in tidy");
+        const start = tf.memory().numTensors;
+        const sum = tf.tidy(() => {
+          const aData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+          const dtype = 'float32';
+          const b =
+            new Float32Array([1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4]);
+          const a = tf.tensor2d(aData, [8, 2], dtype);
+          const result = tf.add(a, tf.tensor2d(b, [8, 2]));
+          
+          a.dispose();
+          return result;
+        });
+        await sum.data();
+        sum.dispose();
+        const end = tf.memory().numTensors;
+        console.log("start = " + start + ", end = " + end+ ", leak = " + (end-start));
+      }
+
+      {
+        console.log("Case scalar");
+        const start = tf.memory().numTensors;
+        const res = tf.add(tf.scalar(1, 'int32'), tf.scalar(true, 'bool'));
+        const end = tf.memory().numTensors;
+        console.log("start = " + start + ", end = " + end+ ", leak = " + (end-start));
+      }
+      {
+        console.log("Case tidy");
+        const start = tf.memory().numTensors;
+        tf.tidy(() => {
+          const a = tf.scalar(1);
+          tf.square(a);  // Uploads to GPU.
+          const b = tf.scalar(1);
+          tf.square(b);  // Uploads to GPU.
+        });
+        const end = tf.memory().numTensors;
+        console.log("start = " + start + ", end = " + end+ ", leak = " + (end-start));
+      }
+    }
+
+    async function gpumemoryTest(){
+
+      {
+        console.log("Case tidy");
+        const start = tf.memory().numTensors;
+        tf.tidy(() => {
+          const a = tf.scalar(1);
+          tf.square(a);  // Uploads to GPU.
+          const b = tf.scalar(1);
+          tf.square(b);  // Uploads to GPU.
+        });
+        const end = tf.memory().numTensors;
+        console.log("start = " + start + ", end = " + end+ ", leak = " + (end-start));
+      }
+      
+    }
+
+    function memoryTest() {
+      bar = "this is a hidden global variable";
+    }
+
+    function memoryTimerTest() {
+      var someResource = 100;// getData();
+      setInterval(function() {
+          var node = document.getElementById('Node');
+          if(node) {
+              // Do stuff with node and someResource.
+              node.innerHTML = JSON.stringify(someResource);
+          }
+          console.log("called");
+      }, 1000);
+    }
+
+    (async function () {
+      // let localBuild = ['core', 'webgl', 'webgpu', 'tfjs-converter'];
+      let localBuild = [];
+      await loadTFJS(localBuild);
+      await tf.setBackend('wasm');
+      await tf.ready();
+      tf.env().set('WEBGPU_CPU_FORWARD', false);
+      let SIGNATURE = null;
+      let outputName = null;
+      
+      console.log("Outputs: " + outputName);
+      await runTFJS(SIGNATURE);
+
+      outputName = 'Add';
+      console.log("Outputs: " + outputName);
+      SIGNATURE = { //: tensorflow.ISignatureDef = {
+        inputs: { x: { name: 'Input:0', dtype: tensorflow_DataType_DT_INT32 } },
+        outputs: { y: { name: outputName, dtype: tensorflow_DataType_DT_INT32 } }
+      };
+      /*
+      await runTFJS(SIGNATURE);
+      outputName = 'Add1';
+      console.log("Outputs: " + outputName);
+      SIGNATURE = { //: tensorflow.ISignatureDef = {
+        inputs: { x: { name: 'Input:0', dtype: tensorflow_DataType_DT_INT32 } },
+        outputs: { y: { name: outputName, dtype: tensorflow_DataType_DT_INT32 } }
+      };
+      await runTFJS(SIGNATURE);
+      */
+
+      //
+      outputName = 'Add2';
+      console.log("Outputs: " + outputName);
+      SIGNATURE = { //: tensorflow.ISignatureDef = {
+        inputs: { x: { name: 'Input:0', dtype: tensorflow_DataType_DT_INT32 } },
+        outputs: { y: { name: outputName, dtype: tensorflow_DataType_DT_INT32 } }
+      };
+      await runTFJS(SIGNATURE);
+      //
+
+      // await httpTest();
+      // await weightFileTest();
+
+      // await tensorTest();
+
+      // memoryTest();
+      // memoryTimerTest();
+    })();
+  </script>
+</body>
+
+</html>

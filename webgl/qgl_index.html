@@ -52,7 +52,7 @@
         }
 
         // Draw the scene
-        for (let i =0 ; i < 1000;i++) {
+        for (let i =0 ; i < 3;i++) {
             drawScene2(gl);
         }
     }
@@ -70,19 +70,33 @@
     //
     // Draw the scene.
     //
-    function drawScene2(gl) {
-        const ext = qglGetGLExtension(gl);
-        qglGetQueryCounterBits(gl, ext);
-        {
-            const query = qglTimestampQuery(gl, ext);
-            gl.flush();
-            drawWithGL(gl);
-            wait(10);
-            const query2 = qglTimestampQuery(gl, ext);
-            gl.flush();
-            sleep(qglGetMultipleTimestampQueryResult, gl, ext, [query, query2], "multiple query gpu and cpu with flush");
-        }
-    }
+function drawScene2(gl) {
+  const ext = qglGetGLExtension(gl);
+  qglGetQueryCounterBits(gl, ext);
+  const query = qglTimestampQuery(gl, ext);
+  //gl.flush();
+  drawWithGL(gl);
+  wait(10);
+  const query2 = qglTimestampQuery(gl, ext);
+  wait(20);
+  const query3 = qglTimestampQuery(gl, ext);
+  wait(30);
+  const query4 = qglTimestampQuery(gl, ext);
+  wait(40);
+  const query5 = qglTimestampQuery(gl, ext);
+  wait(50);
+  const query6 = qglTimestampQuery(gl, ext);
+  wait(10);
+  const query7 = qglTimestampQuery(gl, ext);
+  wait(10);
+  //gl.flush();
+  sleep(qglGetMultipleTimestampQueryResult, gl, ext, [query, query2], "multiple query gpu and cpu with flush");
+  sleep(qglGetMultipleTimestampQueryResult, gl, ext, [query3], "multiple query gpu and cpu with flush");
+  sleep(qglGetMultipleTimestampQueryResult, gl, ext, [query4], "multiple query gpu and cpu with flush");
+  sleep(qglGetMultipleTimestampQueryResult, gl, ext, [query5], "multiple query gpu and cpu with flush");
+  sleep(qglGetMultipleTimestampQueryResult, gl, ext, [query6], "multiple query gpu and cpu with flush");
+  sleep(qglGetMultipleTimestampQueryResult, gl, ext, [query7], "multiple query gpu and cpu with flush");
+}
 
     function drawScene(gl) {
         const ext = qglGetGLExtension(gl);
