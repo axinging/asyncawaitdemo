@@ -17,7 +17,7 @@ limitations under the License.
 </head>
 
 <body>
-  <h2>TensorFlow.js Op demo</h2>
+  <h2>TensorFlowJS model demo</h2>
   <div> Parameter: index_model.html?backend=webgpu&localBuild=webgl,webgpu,core </div>
   <script src="loader.js"></script>
   <script>
@@ -90,8 +90,8 @@ limitations under the License.
       //tf.backend().dispose();
 
       const start4 = tf.memory().numTensors;
-      console.log("start = " + start + ", start1 = " + start1+ ", start2 = " + (start2)
-      + ", start3 = " + start3+ ", start4 = " + (start4));
+      console.log("numTensors: start = " + start + ", after load = " + start1 + ", after predict = " + (start2)
+        + ", after dispose in/out = " + start3 + ", after model dispose = " + (start4));
       // const saveResult = await model.save('downloads://abc');
       //console.log(saveResult);
     }
@@ -115,7 +115,7 @@ limitations under the License.
     async function httpTest() {
       // Calling io.http() method
       const result = tf.io.http('demo.json');
-        
+
       // Printing output
       const tmp = await result.load();
       const buffer = tmp.weightData;
@@ -133,7 +133,7 @@ limitations under the License.
         let a = tf.tensor2d(aData, [8, 2], dtype);
         a = null;
         const end = tf.memory().numTensors;
-        console.log("start = " + start + ", end = " + end+ ", leak = " + (end-start));
+        console.log("start = " + start + ", end = " + end + ", leak = " + (end - start));
       }
       {
         console.log("Case add will leak");
@@ -148,7 +148,7 @@ limitations under the License.
         result.dispose();
         a.dispose();
         const end = tf.memory().numTensors;
-        console.log("start = " + start + ", end = " + end+ ", leak = " + (end-start));
+        console.log("start = " + start + ", end = " + end + ", leak = " + (end - start));
       }
       {
         console.log("Case add will leak in tidy");
@@ -160,14 +160,14 @@ limitations under the License.
             new Float32Array([1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4]);
           const a = tf.tensor2d(aData, [8, 2], dtype);
           const result = tf.add(a, tf.tensor2d(b, [8, 2]));
-          
+
           a.dispose();
           return result;
         });
         await sum.data();
         sum.dispose();
         const end = tf.memory().numTensors;
-        console.log("start = " + start + ", end = " + end+ ", leak = " + (end-start));
+        console.log("start = " + start + ", end = " + end + ", leak = " + (end - start));
       }
 
       {
@@ -175,7 +175,7 @@ limitations under the License.
         const start = tf.memory().numTensors;
         const res = tf.add(tf.scalar(1, 'int32'), tf.scalar(true, 'bool'));
         const end = tf.memory().numTensors;
-        console.log("start = " + start + ", end = " + end+ ", leak = " + (end-start));
+        console.log("start = " + start + ", end = " + end + ", leak = " + (end - start));
       }
       {
         console.log("Case tidy");
@@ -187,11 +187,11 @@ limitations under the License.
           tf.square(b);  // Uploads to GPU.
         });
         const end = tf.memory().numTensors;
-        console.log("start = " + start + ", end = " + end+ ", leak = " + (end-start));
+        console.log("start = " + start + ", end = " + end + ", leak = " + (end - start));
       }
     }
 
-    async function gpumemoryTest(){
+    async function gpumemoryTest() {
 
       {
         console.log("Case tidy");
@@ -203,9 +203,9 @@ limitations under the License.
           tf.square(b);  // Uploads to GPU.
         });
         const end = tf.memory().numTensors;
-        console.log("start = " + start + ", end = " + end+ ", leak = " + (end-start));
+        console.log("start = " + start + ", end = " + end + ", leak = " + (end - start));
       }
-      
+
     }
 
     function memoryTest() {
@@ -214,13 +214,13 @@ limitations under the License.
 
     function memoryTimerTest() {
       var someResource = 100;// getData();
-      setInterval(function() {
-          var node = document.getElementById('Node');
-          if(node) {
-              // Do stuff with node and someResource.
-              node.innerHTML = JSON.stringify(someResource);
-          }
-          console.log("called");
+      setInterval(function () {
+        var node = document.getElementById('Node');
+        if (node) {
+          // Do stuff with node and someResource.
+          node.innerHTML = JSON.stringify(someResource);
+        }
+        console.log("called");
       }, 1000);
     }
 
@@ -233,28 +233,10 @@ limitations under the License.
       tf.env().set('WEBGPU_CPU_FORWARD', false);
       let SIGNATURE = null;
       let outputName = null;
-      
+
       console.log("Outputs: " + outputName);
       await runTFJS(SIGNATURE);
 
-      outputName = 'Add';
-      console.log("Outputs: " + outputName);
-      SIGNATURE = { //: tensorflow.ISignatureDef = {
-        inputs: { x: { name: 'Input:0', dtype: tensorflow_DataType_DT_INT32 } },
-        outputs: { y: { name: outputName, dtype: tensorflow_DataType_DT_INT32 } }
-      };
-      /*
-      await runTFJS(SIGNATURE);
-      outputName = 'Add1';
-      console.log("Outputs: " + outputName);
-      SIGNATURE = { //: tensorflow.ISignatureDef = {
-        inputs: { x: { name: 'Input:0', dtype: tensorflow_DataType_DT_INT32 } },
-        outputs: { y: { name: outputName, dtype: tensorflow_DataType_DT_INT32 } }
-      };
-      await runTFJS(SIGNATURE);
-      */
-
-      //
       outputName = 'Add2';
       console.log("Outputs: " + outputName);
       SIGNATURE = { //: tensorflow.ISignatureDef = {
