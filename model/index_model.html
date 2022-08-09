@@ -50,7 +50,7 @@ limitations under the License.
               value: {
                 tensor: {
                   dtype: tensorflow_DataType_DT_INT32,
-                  tensorShape: { dim: [{ size: 1 }] },
+                  tensorShape: { dim: [{ size: 1 }] }, // tensorShape is ignored.
                 }
               },
               index: { i: 0 },
@@ -63,15 +63,6 @@ limitations under the License.
         ],
         versions: { producer: 1.0, minConsumer: 3 }
       };
-      /*
-      Outputs: null
-      Outputs: Add
-      {"0":109,"1":215}
-      Outputs: Add1
-
-      Outputs: Add2
-      {"0":106,"1":210}
-      */
 
       const customLoader = { // : tfc.io.IOHandlerSync = {
         load: () => {
