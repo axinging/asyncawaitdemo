@@ -24,6 +24,14 @@ limitations under the License.
   <script src="model2.js"></script>
   <script src="tensor.js"></script>
   <script src="finalization_registry.js"></script>
+  <br>
+  <button id="mapTest">map Test</button>
+  <br><br>
+  <button id="tensorTest">tensor Test</button>
+  <br><br>
+  <button id="modelTest">model Test</button>
+  <br><br>
+  <button id="finalizerTest">finalization_registry Test</button>
   <script>
     'use strict';
     async function loadWeightsFile(file) { // Promise<ArrayBuffer> 
@@ -31,7 +39,7 @@ limitations under the License.
         const weightFileReader = new FileReader();
         weightFileReader.onload = (event) => {
           // tslint:disable-next-line:no-any
-          const weightData = (event.target).result;//  as ArrayBuffer;
+          const weightData = (event.target).result; // as ArrayBuffer;
           var array = new Int32Array(weightData);
           console.log(JSON.stringify(array));
           resolve(weightData);
@@ -95,6 +103,22 @@ limitations under the License.
       await tf.ready();
       tf.env().set('WEBGPU_CPU_FORWARD', false);
 
+      document.getElementById("mapTest").onclick=async ()=>{
+        await loadScript("map.js");
+      };
+
+      document.getElementById("tensorTest").onclick=async ()=>{
+        await tensorTest();
+      };
+
+      document.getElementById("modelTest").onclick=async ()=>{
+        await runTFJSModel();
+      };
+
+      document.getElementById("finalizerTest").onclick=async ()=>{
+        await finalization_registry();
+      };
+
       //await runTFJSModel();
       //await runTFJSModel2();
       // await gpumemoryTest();
@@ -103,8 +127,8 @@ limitations under the License.
       // await httpTest();
       // await weightFileTest();
 
-      //await tensorTest();
-      finalization_registry();
+      // await tensorTest();
+      // finalization_registry();
       // memoryTest();
       // memoryTimerTest();
     })();
