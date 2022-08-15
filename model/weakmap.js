@@ -1,6 +1,7 @@
 // https://javascript.plainenglish.io/javascript-finalizer-2859f0832f07
 let arrCollection = new WeakMap()
 
+// arrCollection should be GCed.
 const registerFinalizer = new FinalizationRegistry(message => {
   console.log(message)
 });

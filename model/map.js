@@ -3,6 +3,7 @@ let arrCollection = new Map();
 let arrCollection2 = new Map();
 let arrCollection3 = new Map();
 
+// arrCollection should not be GCed.
 const registerFinalizer = new FinalizationRegistry(message => {
   console.log(message)
 });
