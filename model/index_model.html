@@ -23,6 +23,7 @@ limitations under the License.
   <script src="model.js"></script>
   <script src="model2.js"></script>
   <script src="tensor.js"></script>
+  <script src="finalization_registry.js"></script>
   <script>
     'use strict';
     async function loadWeightsFile(file) { // Promise<ArrayBuffer> 
@@ -102,8 +103,8 @@ limitations under the License.
       // await httpTest();
       // await weightFileTest();
 
-      await tensorTest();
-
+      //await tensorTest();
+      finalization_registry();
       // memoryTest();
       // memoryTimerTest();
     })();
