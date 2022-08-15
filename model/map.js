@@ -1,5 +1,7 @@
 // https://javascript.plainenglish.io/javascript-finalizer-2859f0832f07
-let arrCollection = new Map()
+let arrCollection = new Map();
+let arrCollection2 = new Map();
+let arrCollection3 = new Map();
 
 const registerFinalizer = new FinalizationRegistry(message => {
   console.log(message)
