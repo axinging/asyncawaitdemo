@@ -20,12 +20,15 @@ limitations under the License.
   <h2>TensorFlowJS model demo</h2>
   <div> Parameter: index_model.html?backend=webgpu&localBuild=webgl,webgpu,core </div>
   <script src="loader.js"></script>
-  <script src="model.js"></script>
+  <!--script src="model.js"></script>
   <script src="model2.js"></script>
   <script src="tensor.js"></script>
-  <script src="finalization_registry.js"></script>
+  <script src="finalization_registry.js"></script>-->
+  <script src="weakmap.js"></script>
   <br>
   <button id="mapTest">map Test</button>
+  <br><br>
+  <button id="weakmapTest">weakmap Test</button>
   <br><br>
   <button id="tensorTest">tensor Test</button>
   <br><br>
@@ -103,19 +106,23 @@ limitations under the License.
       await tf.ready();
       tf.env().set('WEBGPU_CPU_FORWARD', false);
 
-      document.getElementById("mapTest").onclick=async ()=>{
+      document.getElementById("mapTest").onclick = async () => {
         await loadScript("map.js");
       };
 
-      document.getElementById("tensorTest").onclick=async ()=>{
+      document.getElementById("weakmapTest").onclick = async () => {
+        await loadScript("weakmap.js");
+      };
+
+      document.getElementById("tensorTest").onclick = async () => {
         await tensorTest();
       };
 
-      document.getElementById("modelTest").onclick=async ()=>{
+      document.getElementById("modelTest").onclick = async () => {
         await runTFJSModel();
       };
 
-      document.getElementById("finalizerTest").onclick=async ()=>{
+      document.getElementById("finalizerTest").onclick = async () => {
         await finalization_registry();
       };
 
