@@ -24,7 +24,7 @@ async function finalization_registry() {
       waitingForCleanup = false;
     });
 
-    registry.register(b, 40);
+    registry.register(b, 'Tensor b');
     b = null;
   }
   let end = tf.memory().numTensors;
@@ -39,7 +39,7 @@ async function finalization_registry() {
     await sleep(1000);
     console.log('wait');
   }
-  console.log(`foo was reclaimed after ${
+  console.log(`FinalizationRegistry was called after ${
       ((Date.now() - startTime) / 1000).toFixed(1)}s`);
   end = tf.memory().numTensors;
   console.log(' end = ' + end + ', leak = ' + (end - start));

@@ -17,15 +17,18 @@ limitations under the License.
 </head>
 
 <body>
-  <h2>TensorFlowJS model demo</h2>
-  <div> Parameter: index_model.html?backend=webgpu&localBuild=webgl,webgpu,core </div>
+  <h2>TensorflowJS Model demo</h2>
   <script src="loader.js"></script>
   <!--script src="model.js"></script>
   <script src="model2.js"></script>
   <script src="tensor.js"></script>
-  <script src="finalization_registry.js"></script>-->
-  <script src="weakmap.js"></script>
+  <script src="finalization_registry.js"></script>
+  <script src="weakmap.js"></script>-->
+  <script src="model.js"></script>
+  <script src="finalization_registry.js"></script>
   <br>
+  <button id="finalizerTest">finalization_registry Test</button>
+  <br><br>
   <button id="mapTest">map Test</button>
   <br><br>
   <button id="weakmapTest">weakmap Test</button>
@@ -33,70 +36,8 @@ limitations under the License.
   <button id="tensorTest">tensor Test</button>
   <br><br>
   <button id="modelTest">model Test</button>
-  <br><br>
-  <button id="finalizerTest">finalization_registry Test</button>
   <script>
     'use strict';
-    async function loadWeightsFile(file) { // Promise<ArrayBuffer> 
-      return new Promise((resolve, reject) => {
-        const weightFileReader = new FileReader();
-        weightFileReader.onload = (event) => {
-          // tslint:disable-next-line:no-any
-          const weightData = (event.target).result; // as ArrayBuffer;
-          var array = new Int32Array(weightData);
-          console.log(JSON.stringify(array));
-          resolve(weightData);
-        };
-        weightFileReader.onerror = error =>
-          reject(`Failed to weights data from file of path '${file}'.`);
-        weightFileReader.readAsArrayBuffer(file);
-      });
-    }
-
-    async function httpTest() {
-      // Calling io.http() method
-      const result = tf.io.http('demo.json');
-
-      // Printing output
-      const tmp = await result.load();
-      const buffer = tmp.weightData;
-      let view = new Int32Array(buffer);
-      console.log(JSON.stringify(view));
-    }
-
-
-    async function gpumemoryTest() {
-
-      {
-        console.log("Case tidy");
-        const start = tf.memory().numTensors;
-        tf.tidy(() => {
-          const a = tf.scalar(1);
-          tf.square(a);  // Uploads to GPU.
-          //const b = tf.scalar(1);
-          //tf.square(b);  // Uploads to GPU.
-        });
-        const end = tf.memory().numTensors;
-        console.log("start = " + start + ", end = " + end + ", leak = " + (end - start));
-      }
-
-    }
-
-    function memoryTest() {
-      bar = "this is a hidden global variable";
-    }
-
-    function memoryTimerTest() {
-      var someResource = 100;// getData();
-      setInterval(function () {
-        var node = document.getElementById('Node');
-        if (node) {
-          // Do stuff with node and someResource.
-          node.innerHTML = JSON.stringify(someResource);
-        }
-        console.log("called");
-      }, 1000);
-    }
 
     (async function () {
       // let localBuild = ['core', 'webgl', 'webgpu', 'tfjs-converter'];
@@ -106,6 +47,10 @@ limitations under the License.
       await tf.ready();
       tf.env().set('WEBGPU_CPU_FORWARD', false);
 
+      document.getElementById("finalizerTest").onclick = async () => {
+        await finalization_registry();
+      };
+      
       document.getElementById("mapTest").onclick = async () => {
         await loadScript("map.js");
       };
@@ -122,9 +67,6 @@ limitations under the License.
         await runTFJSModel();
       };
 
-      document.getElementById("finalizerTest").onclick = async () => {
-        await finalization_registry();
-      };
 
       //await runTFJSModel();
       //await runTFJSModel2();
