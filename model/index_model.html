@@ -40,7 +40,7 @@ limitations under the License.
       // let localBuild = ['core', 'webgl', 'webgpu', 'tfjs-converter'];
       let localBuild = [];
       await loadTFJS(localBuild);
-      await tf.setBackend('webgpu');
+      await tf.setBackend('webgl');
       await tf.ready();
       tf.env().set('WEBGPU_CPU_FORWARD', false);
 
