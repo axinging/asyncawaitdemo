@@ -1,0 +1,84 @@
+<html>
+
+<head>
+  <title>TensorFlow.js Op demo</title>
+</head>
+
+<body>
+  <h2>TensorflowJS Model demo</h2>
+  <br>
+  <button id="mainTest">Main Test</button>
+  <br><br>
+  <script>
+    'use strict';
+
+    class Model {
+      constructor(height, width) {
+        this.height = height;
+        this.width = width;
+      }
+      // Getter
+      area() {
+        return this.calcArea();
+      }
+      // Method
+      calcArea() {
+        return this.height * this.width;
+      }
+    }
+
+    var circle = {
+      radius: 10,
+      area: function () {
+        return Math.PI * this.radius * this.radius;
+      }
+    };
+    const benchmarks = {
+      load: async (inputResolution = 25) => {
+        console.log(inputResolution);
+        const url = `https://tfhub.dev/${inputResolution}`;
+        return url;
+      },
+      predictFunc: (inputResolution = 128) => {
+        return model => model.calcArea();
+      },
+      predictFunc2: (model, inputResolution = 128) => {
+        console.log("predictFunc2 "+ model);
+        return model => model.calcArea();
+      },
+    };
+
+    async function mainTest() {
+      const url = await benchmarks.load(100);
+      
+      {
+        const benchmarkFunc = benchmarks.predictFunc(100);
+        console.log(benchmarkFunc);
+
+        const model = new Model(10, 10);
+        console.log(benchmarkFunc(model));
+      }
+      {
+        const benchmarkFunc = benchmarks.predictFunc2(200);
+        console.log(benchmarkFunc);
+
+        const model = new Model(20, 20);
+        console.log(benchmarkFunc(model));
+      }
+      
+      {
+        const benchmarkFunc = benchmarks.predictFunc2(300);
+        console.log(benchmarkFunc);
+        // This will not work even make model golbal.
+        const model = new Model(30, 30);
+        console.log(benchmarkFunc(100));
+      }
+    }
+
+    (async function () {
+      await mainTest();
+    })();
+  </script>
+</body>
+
+</html>
