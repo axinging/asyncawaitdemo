@@ -134,16 +134,18 @@ async function testCreateTensorFromGPUBuffer(shape) {
 
 async function testOne(shape) {
   const times = [];
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 50; i++) {
     const time = await testCreateTensorFromGPUBuffer(shape);
     times.push(time.toFixed(2));
   }
-  console.log(shape + ': ' + times);
+  console.log('shape: ' + shape)
+  console.log('time: ' + times);
 }
 
 async function mainTest() {
   await testOne([112, 112, 3]);
   await testOne([224, 224, 3]);
   await testOne([576, 576, 3]);
+  await testOne([4915200 / 4]);
   await testOne([1024, 1024, 3]);
 }
