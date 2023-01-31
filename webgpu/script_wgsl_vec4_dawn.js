@@ -6,7 +6,7 @@ function acquireBuffer(device, byteSize, usage) {
 }
 
 function getComputeShaderCodeWGSL() {
-    return ` 
+  return ` 
       struct Buf {
         data: array<vec4<f32>, 2>,
       };
@@ -36,7 +36,13 @@ function getComputeShaderCodeWGSL() {
           }
       }
   `;
-  }
+}
+
+function defaultGpuBufferUsage() {
+  return GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC |
+      GPUBufferUsage.COPY_DST;
+}
+
 
 (async () => {
   if (!navigator.gpu) {
@@ -52,14 +58,25 @@ function getComputeShaderCodeWGSL() {
 
   const inBuf = new Float32Array([0, 1, 2, 3, 4, 5, 6, NaN]);
 
-  const gpuBufferFirstMatrix = device.createBuffer({
-    mappedAtCreation: true,
-    size: inBuf.byteLength,
-    usage: GPUBufferUsage.STORAGE
-  });
-  const arrayBufferFirstMatrix = gpuBufferFirstMatrix.getMappedRange();
-  new Float32Array(arrayBufferFirstMatrix).set(inBuf);
-  gpuBufferFirstMatrix.unmap();
+  var gpuBufferFirstMatrix;
+  const useWriteBuffer = true;
+  if (useWriteBuffer) {
+    gpuBufferFirstMatrix = device.createBuffer({
+      size: inBuf.byteLength,
+      usage: defaultGpuBufferUsage(),
+    });
+    device.queue.writeBuffer(gpuBufferFirstMatrix, 0, inBuf);
+  } else {
+    gpuBufferFirstMatrix = device.createBuffer({
+      mappedAtCreation: true,
+      size: inBuf.byteLength,
+      usage: GPUBufferUsage.STORAGE
+    });
+    const arrayBufferFirstMatrix = gpuBufferFirstMatrix.getMappedRange();
+    new Float32Array(arrayBufferFirstMatrix).set(inBuf);
+    gpuBufferFirstMatrix.unmap();
+  }
+
   // TODO(memoryleak): below result in Destroyed buffer used in a submit.
   // gpuBufferFirstMatrix.destroy();
 
@@ -78,8 +95,7 @@ function getComputeShaderCodeWGSL() {
   // Pipeline setup
   const shaderWgsl = getComputeShaderCodeWGSL();
   const computePipeline = device.createComputePipeline({
-    // layout: device.createPipelineLayout({bindGroupLayouts:
-    // [bindGroupLayout]}),
+    layout: 'auto',
     compute: {
       module: device.createShaderModule({code: shaderWgsl}),
       entryPoint: 'main'
@@ -102,8 +118,7 @@ function getComputeShaderCodeWGSL() {
   passEncoder.setPipeline(computePipeline);
   passEncoder.setBindGroup(0, bindGroup);
   const workPerThread = 4;
-  passEncoder.dispatchWorkgroups(
-      1/* x */, 1 /* y */);
+  passEncoder.dispatchWorkgroups(1 /* x */, 1 /* y */);
   passEncoder.end();
 
   // Get a GPU buffer for reading in an unmapped state.
