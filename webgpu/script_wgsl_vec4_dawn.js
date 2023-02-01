@@ -38,6 +38,37 @@ function getComputeShaderCodeWGSL() {
   `;
 }
 
+function getComputeShaderCodeWGSLGood() {
+  return ` 
+    struct Buf {
+      data: array<vec4<f32>, 2>,
+    };
+
+    @group(0) @binding(0) var<storage, read> inBuf : Buf;
+    @group(0) @binding(1) var<storage, read_write> outBuf : Buf; 
+
+    fn isnan(val: f32) -> bool {
+      let floatToUint: u32 = bitcast<u32>(val);
+      return (floatToUint & 0x7fffffffu) > 0x7f800000u;
+    }
+
+    @compute @workgroup_size(1)
+    fn main(@builtin(global_invocation_id) globalId : vec3<u32>) {
+      
+      for (var j = 0; j < 2; j ++) {
+          // let result = inBuf.data[j];
+          for (var i = 0; i < 4; i = i + 1) {
+              if (isnan(inBuf.data[j][i])) {
+                outBuf.data[j][i] = inBuf.data[j][i];
+              } else {
+                outBuf.data[j][i] = clamp(inBuf.data[j][i], 0.0, 10.0);
+              }
+          }
+      }
+    }
+`;
+}
+
 function defaultGpuBufferUsage() {
   return GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC |
       GPUBufferUsage.COPY_DST;
