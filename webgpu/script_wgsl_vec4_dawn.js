@@ -74,23 +74,13 @@ function defaultGpuBufferUsage() {
       GPUBufferUsage.COPY_DST;
 }
 
-
-(async () => {
-  if (!navigator.gpu) {
-    console.log(
-        'WebGPU is not supported. Enable chrome://flags/#enable-unsafe-webgpu flag.');
-    return;
-  }
-
-  const adapter = await navigator.gpu.requestAdapter();
-  const device = await adapter.requestDevice();
-
+async function runTest(device, shaderWgsl) {
   // First Matrix
 
   const inBuf = new Float32Array([0, 1, 2, 3, 4, 5, 6, NaN]);
 
   var gpuBufferFirstMatrix;
-  const useWriteBuffer = true;
+  const useWriteBuffer = false;
   if (useWriteBuffer) {
     gpuBufferFirstMatrix = device.createBuffer({
       size: inBuf.byteLength,
@@ -124,7 +114,7 @@ function defaultGpuBufferUsage() {
   // Compute shader code (GLSL)
 
   // Pipeline setup
-  const shaderWgsl = getComputeShaderCodeWGSL();
+  // const shaderWgsl = getComputeShaderCodeWGSLGood();
   const computePipeline = device.createComputePipeline({
     layout: 'auto',
     compute: {
@@ -157,7 +147,6 @@ function defaultGpuBufferUsage() {
     size: resultMatrixBufferSize,
     usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ
   });
-  console.log(resultMatrixBufferSize);
 
   // Encode commands for copying buffer to buffer.
   commandEncoder.copyBufferToBuffer(
@@ -176,5 +165,21 @@ function defaultGpuBufferUsage() {
   // Read buffer.
   await gpuReadBuffer.mapAsync(GPUMapMode.READ);
   const arrayBuffer = gpuReadBuffer.getMappedRange();
-  console.log(JSON.stringify(new Float32Array(arrayBuffer)));
+  console.log(new Float32Array(arrayBuffer));
+}
+
+
+(async () => {
+  if (!navigator.gpu) {
+    console.log(
+        'WebGPU is not supported. Enable chrome://flags/#enable-unsafe-webgpu flag.');
+    return;
+  }
+
+  const adapter = await navigator.gpu.requestAdapter();
+  const device = await adapter.requestDevice();
+  console.log("Run good case:");
+  await runTest(device, getComputeShaderCodeWGSLGood());
+  console.log("Run bad case:");
+  await runTest(device, getComputeShaderCodeWGSL());
 })();
