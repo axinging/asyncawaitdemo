@@ -179,7 +179,9 @@ async function runTest(device, shaderWgsl) {
   const adapter = await navigator.gpu.requestAdapter();
   const device = await adapter.requestDevice();
   console.log("Run good case:");
+  // 20230410: Float32Array(8) [0, 1, 2, 3, 4, 5, 6, NaN];
   await runTest(device, getComputeShaderCodeWGSLGood());
   console.log("Run bad case:");
+  // 20230410: Float32Array(8) [0, 1, 2, 3, NaN, NaN, NaN, NaN];
   await runTest(device, getComputeShaderCodeWGSL());
 })();
