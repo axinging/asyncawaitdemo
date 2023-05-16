@@ -139,6 +139,7 @@ async function drawBackground(canvas, alpha = 1.0) {
     img.src = IMG_OPAQUE;
     await img.decode();
     var context = canvas.getContext('2d');
+    // const [imageData, w, h] = await ImageURLToImageData(IMG_OPAQUE);
     context.globalAlpha = alpha;
     context.drawImage(img, 0, 0);
   }
