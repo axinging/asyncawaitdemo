@@ -13,29 +13,7 @@
     <script src="loader.js"></script>
     <script src="index_tfdraw.js"></script>
     <fieldset>
-      <legend>Draw-composite Test</legend>
-      Draw by canvas:
-      <canvas id="canvas" width="48" height="48"></canvas>
-
-      Draw by tf.draw(cpu):
-      <canvas id="tfcpucanvas" width="48" height="48"></canvas>
-
-      Draw by tf.draw(webgpu):
-      <canvas id="tfwebgpucanvas" width="48" height="48"></canvas>
-    </fieldset>
-
-    <fieldset>
-      <legend>tf.draw Alpha test: </legend>
-
-      Draw by tf.draw(cpu), alpha = 0.3:
-      <canvas id="alphacanvas" width="48" height="48"></canvas>
-
-      Draw by tf.draw(cpu), alpha = 0.9:
-      <canvas id="alpha2canvas" width="48" height="48"></canvas>
-    </fieldset>
-
-    <fieldset>
-      <legend>canvas.draw Alpha test: </legend>
+      <legend>canvas.drawImage Alpha test: </legend>
 
       Draw by canvas, alpha = 0.3:
       <canvas id="alpha3canvas" width="48" height="48"></canvas>
@@ -53,7 +31,26 @@
       Draw by canvas.putImageData, alpha = 0.9:
       <canvas id="alpha6canvas" width="48" height="48"></canvas>
     </fieldset>
+    <fieldset>
+      <legend>tf.draw Alpha test: </legend>
 
+      Draw by tf.draw(cpu), alpha = 0.3:
+      <canvas id="alphacanvas" width="48" height="48"></canvas>
+
+      Draw by tf.draw(cpu), alpha = 0.9:
+      <canvas id="alpha2canvas" width="48" height="48"></canvas>
+    </fieldset>
+    <fieldset>
+      <legend>Draw-composite Test</legend>
+      Draw by canvas.drawImage:
+      <canvas id="canvas" width="48" height="48"></canvas>
+
+      Draw by tf.draw(cpu):
+      <canvas id="tfcpucanvas" width="48" height="48"></canvas>
+
+      Draw by tf.draw(webgpu):
+      <canvas id="tfwebgpucanvas" width="48" height="48"></canvas>
+    </fieldset>
     <script>
         (async function () {
           await main();
