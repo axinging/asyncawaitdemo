@@ -12,16 +12,21 @@ async function testDrawAlpha() {
   let backendName = 'cpu';
   await tf.setBackend(backendName);
   await tf.ready();
+  tfdraw = true;
   drawContextType = getContextName(backendName);
+  let dataURL1, dataURL2;
   {
-    tfdraw = true;
     const canvas = document.getElementById('alphacanvas');
     await drawBackground(canvas, 0.3);
+    dataURL1 = canvas.toDataURL();
   }
   {
-    tfdraw = true;
     const canvas = document.getElementById('alpha2canvas');
     await drawBackground(canvas, 0.9);
+    dataURL2 = canvas.toDataURL();
+  }
+  if (dataURL1 === dataURL2) {
+    console.error('Opacity not work!');
   }
 }
 
@@ -75,14 +80,14 @@ const width = 48;
 const height = 48;
 let tfdraw = true;
 
-async function drawForground(canvas) {
+async function drawForground(canvas, alpha = 1.0) {
   if (tfdraw) {
     // This is not transparent.
     const [imageData, w, h] = await ImageURLToImageData(IMG_TRANSPARENT);
     const img = tf.tensor3d(imageData.data, [width, height, 4], 'int32');
     tf.browser.draw(img, canvas, {
       contextOptions: {contextType: drawContextType},
-      imageOptions: {alpha: 0.1}
+      imageOptions: {alpha}
     });
   } else {
     var context = canvas.getContext('2d');
