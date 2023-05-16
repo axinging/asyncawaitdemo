@@ -5,10 +5,11 @@ async function main() {
   let localBuild = ['core', 'cpu', 'webgpu', 'webgl', 'tfjs-converter'];
   await loadTFJS(localBuild);
   await testDraw();
-  await testDrawAlpha();
+  await testTFDrawAlpha();
+  await testCanvasDrawAlpha();
 }
 
-async function testDrawAlpha() {
+async function testTFDrawAlpha() {
   let backendName = 'cpu';
   await tf.setBackend(backendName);
   await tf.ready();
@@ -22,6 +23,26 @@ async function testDrawAlpha() {
   }
   {
     const canvas = document.getElementById('alpha2canvas');
+    await drawBackground(canvas, 0.9);
+    dataURL2 = canvas.toDataURL();
+  }
+  if (dataURL1 === dataURL2) {
+    console.error('Opacity not work!');
+  }
+}
+
+async function testCanvasDrawAlpha() {
+  let backendName = 'cpu';
+  tfdraw = false;
+  drawContextType = getContextName(backendName);
+  let dataURL1, dataURL2;
+  {
+    const canvas = document.getElementById('alpha3canvas');
+    await drawBackground(canvas, 0.3);
+    dataURL1 = canvas.toDataURL();
+  }
+  {
+    const canvas = document.getElementById('alpha4canvas');
     await drawBackground(canvas, 0.9);
     dataURL2 = canvas.toDataURL();
   }
@@ -118,6 +139,7 @@ async function drawBackground(canvas, alpha = 1.0) {
     img.src = IMG_OPAQUE;
     await img.decode();
     var context = canvas.getContext('2d');
+    context.globalAlpha = alpha;
     context.drawImage(img, 0, 0);
   }
 }
