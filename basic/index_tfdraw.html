@@ -16,40 +16,49 @@
       <legend>canvas.drawImage Alpha test: </legend>
 
       Draw by canvas, alpha = 0.3:
-      <canvas id="alpha3canvas" width="48" height="48"></canvas>
+      <canvas id="canvas_draw_alpha_1" width="48" height="48"></canvas>
 
       Draw by canvas, alpha = 0.9:
-      <canvas id="alpha4canvas" width="48" height="48"></canvas>
+      <canvas id="canvas_draw_alpha_2" width="48" height="48"></canvas>
     </fieldset>
 
     <fieldset>
       <legend>canvas.putImageData Alpha test: </legend>
 
-      Draw by canvas.putImageData, alpha = 0.3:
-      <canvas id="alpha5canvas" width="48" height="48"></canvas>
+      Draw by canvas.putImageData, alphaChannel = 0.3:
+      <canvas id="canvas_putimagedata_alpha_1" width="48" height="48"></canvas>
 
-      Draw by canvas.putImageData, alpha = 0.9:
-      <canvas id="alpha6canvas" width="48" height="48"></canvas>
+      Draw by canvas.putImageData, alphaChannel = 0.9:
+      <canvas id="canvas_putimagedata_alpha_2" width="48" height="48"></canvas>
     </fieldset>
     <fieldset>
-      <legend>tf.draw Alpha test: </legend>
+      <legend>tf.draw Alpha test(cpu): </legend>
 
       Draw by tf.draw(cpu), alpha = 0.3:
-      <canvas id="alphacanvas" width="48" height="48"></canvas>
+      <canvas id="tfdraw_alpha_cpu_1" width="48" height="48"></canvas>
 
       Draw by tf.draw(cpu), alpha = 0.9:
-      <canvas id="alpha2canvas" width="48" height="48"></canvas>
+      <canvas id="tfdraw_alpha_cpu_2" width="48" height="48"></canvas>
+    </fieldset>
+    <fieldset>
+      <legend>tf.draw Alpha test(webgpu): </legend>
+
+      Draw by tf.draw(webgpu), alpha = 0.3:
+      <canvas id="tfdraw_alpha_webgpu_1" width="48" height="48"></canvas>
+
+      Draw by tf.draw(webgpu), alpha = 0.9:
+      <canvas id="tfdraw_alpha_webgpu_2" width="48" height="48"></canvas>
     </fieldset>
     <fieldset>
       <legend>Draw-composite Test</legend>
       Draw by canvas.drawImage:
-      <canvas id="canvas" width="48" height="48"></canvas>
+      <canvas id="drawcomposite" width="48" height="48"></canvas>
 
       Draw by tf.draw(cpu):
-      <canvas id="tfcpucanvas" width="48" height="48"></canvas>
+      <canvas id="drawcomposite_cpu" width="48" height="48"></canvas>
 
       Draw by tf.draw(webgpu):
-      <canvas id="tfwebgpucanvas" width="48" height="48"></canvas>
+      <canvas id="drawcomposite_webgpu" width="48" height="48"></canvas>
     </fieldset>
     <script>
         (async function () {

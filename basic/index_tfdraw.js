@@ -4,27 +4,27 @@
 async function main() {
   let localBuild = ['core', 'cpu', 'webgpu', 'webgl', 'tfjs-converter'];
   await loadTFJS(localBuild);
-  await testDraw();
-  await testTFDrawAlpha();
+  await testTFDrawAlpha('cpu');
+  await testTFDrawAlpha('webgpu');
   await testCanvasDrawAlpha();
   await testCanvasPutImageDataAlpha();
+  await testDrawComposite();
 }
 
-async function testTFDrawAlpha() {
-  let backendName = 'cpu';
+async function testTFDrawAlpha(backendName) {
   await tf.setBackend(backendName);
   await tf.ready();
   tfdraw = true;
   drawContextType = getContextName(backendName);
   let dataURL1, dataURL2;
   {
-    const canvas = document.getElementById('alphacanvas');
+    const canvas = document.getElementById(`tfdraw_alpha_${backendName}_1`);
     await drawBackground(canvas, 0.3);
     dataURL1 = canvas.toDataURL();
   }
   {
-    const canvas = document.getElementById('alpha2canvas');
-    await drawBackground(canvas, 0.9);
+    const canvas = document.getElementById(`tfdraw_alpha_${backendName}_2`);
+    await drawBackground(canvas, 1.0);
     dataURL2 = canvas.toDataURL();
   }
   if (dataURL1 === dataURL2) {
@@ -38,12 +38,12 @@ async function testCanvasDrawAlpha() {
   drawContextType = getContextName(backendName);
   let dataURL1, dataURL2;
   {
-    const canvas = document.getElementById('alpha3canvas');
+    const canvas = document.getElementById('canvas_draw_alpha_1');
     await drawBackground(canvas, 0.3);
     dataURL1 = canvas.toDataURL();
   }
   {
-    const canvas = document.getElementById('alpha4canvas');
+    const canvas = document.getElementById('canvas_draw_alpha_2');
     await drawBackground(canvas, 0.9);
     dataURL2 = canvas.toDataURL();
   }
@@ -67,12 +67,12 @@ async function testCanvasPutImageDataAlpha() {
   drawContextType = getContextName(backendName);
   let dataURL1, dataURL2;
   {
-    const canvas = document.getElementById('alpha5canvas');
+    const canvas = document.getElementById('canvas_putimagedata_alpha_1');
     await putImageDataByCanvas(canvas, 0.3);
     dataURL1 = canvas.toDataURL();
   }
   {
-    const canvas = document.getElementById('alpha6canvas');
+    const canvas = document.getElementById('canvas_putimagedata_alpha_2');
     await putImageDataByCanvas(canvas, 0.9);
     dataURL2 = canvas.toDataURL();
   }
@@ -81,22 +81,22 @@ async function testCanvasPutImageDataAlpha() {
   }
 }
 
-
-async function testDraw() {
+// Draw-compisite test.
+async function testDrawComposite() {
   let backendName = 'cpu';
   await tf.setBackend(backendName);
   await tf.ready();
   drawContextType = getContextName(backendName);
   {
     tfdraw = false;
-    const canvas = getCanvas();
+    const canvas = document.getElementById('drawcomposite');
     await drawBackground(canvas);
     await drawForground(canvas);
   }
   readBackTFDrawTest();
   {
     tfdraw = true;
-    const canvas = getTFCPUCanvas();
+    const canvas = document.getElementById('drawcomposite_cpu');
     await drawBackground(canvas, 0.0);
     await drawForground(canvas);
   }
@@ -107,22 +107,10 @@ async function testDraw() {
   drawContextType = getContextName(backendName);
   {
     tfdraw = true;
-    const canvas = getTFWebGPUCanvas();
+    const canvas = document.getElementById('drawcomposite_webgpu');
     await drawBackground(canvas);
     await drawForground(canvas);
   }
-}
-
-function getCanvas() {
-  return document.getElementById('canvas');
-}
-
-function getTFCPUCanvas() {
-  return document.getElementById('tfcpucanvas');
-}
-
-function getTFWebGPUCanvas() {
-  return document.getElementById('tfwebgpucanvas');
 }
 
 const IMG_OPAQUE = 'RPEQQ_opaque.jpg';
