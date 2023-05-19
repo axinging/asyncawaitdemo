@@ -9,6 +9,8 @@ async function main() {
   await testCanvasDrawAlpha();
   await testCanvasPutImageDataAlpha();
   await testDrawComposite();
+  await testTFDrawAlphaGray('cpu');
+  await testTFDrawAlphaGray('webgpu');
 }
 
 async function testTFDrawAlpha(backendName) {
@@ -25,6 +27,28 @@ async function testTFDrawAlpha(backendName) {
   {
     const canvas = document.getElementById(`tfdraw_alpha_${backendName}_2`);
     await drawBackground(canvas, 1.0);
+    dataURL2 = canvas.toDataURL();
+  }
+  if (dataURL1 === dataURL2) {
+    console.error('Opacity not work!');
+  }
+}
+
+async function testTFDrawAlphaGray(backendName) {
+  await tf.setBackend(backendName);
+  await tf.ready();
+  tfdraw = true;
+  drawContextType = getContextName(backendName);
+  let dataURL1, dataURL2;
+  {
+    const canvas = document.getElementById(`tfdraw_alphagray_${backendName}_1`);
+    console.log('dg1 ');
+    await drawBackgroundGray(canvas, 0.3);
+    dataURL1 = canvas.toDataURL();
+  }
+  {
+    const canvas = document.getElementById(`tfdraw_alphagray_${backendName}_2`);
+    await drawBackgroundGray(canvas, 1.0);
     dataURL2 = canvas.toDataURL();
   }
   if (dataURL1 === dataURL2) {
@@ -148,6 +172,44 @@ async function drawBackground(canvas, alpha = 1.0) {
   if (tfdraw) {
     // const imageData = ImageToData(img);
     const [imageData, w, h] = await ImageURLToImageData(IMG_OPAQUE);
+    const img = tf.tensor3d(imageData.data, [width, height, 4], 'int32');
+    tf.browser.draw(img, canvas, {
+      contextOptions: {contextType: drawContextType},
+      imageOptions: {alpha}
+    });
+  } else {
+    const img = new Image();
+    img.src = IMG_OPAQUE;
+    await img.decode();
+    var context = canvas.getContext('2d');
+    // const [imageData, w, h] = await ImageURLToImageData(IMG_OPAQUE);
+    context.globalAlpha = alpha;
+    context.drawImage(img, 0, 0);
+  }
+}
+
+function colorToGray(colorImageData) {
+  for (let j = 0; j < colorImageData.height; j++) {
+    for (let i = 0; i < colorImageData.width; i++) {
+      var index = (i * 4) * colorImageData.width + (j * 4);
+      var red = colorImageData.data[index];
+      var green = colorImageData.data[index + 1];
+      var blue = colorImageData.data[index + 2];
+      var alpha = colorImageData.data[index + 3];
+      var average = (red + green + blue) / 3;
+      colorImageData.data[index] = average;
+      colorImageData.data[index + 1] = average;
+      colorImageData.data[index + 2] = average;
+      colorImageData.data[index + 3] = alpha;
+    }
+  }
+}
+
+async function drawBackgroundGray(canvas, alpha = 1.0) {
+  if (tfdraw) {
+    // const imageData = ImageToData(img);
+    const [imageData, w, h] = await ImageURLToImageData(IMG_OPAQUE);
+    colorToGray(imageData);
     const img = tf.tensor3d(imageData.data, [width, height, 4], 'int32');
     tf.browser.draw(img, canvas, {
       contextOptions: {contextType: drawContextType},
