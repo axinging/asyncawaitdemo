@@ -13,6 +13,17 @@ async function main() {
   await testTFDrawAlphaGray('webgpu');
 }
 
+function appendCanvas(canvasInfo) {
+  const canvasArea = document.getElementById('canvas_area');
+  var newFieldSet = document.createElement('fieldset');
+  let innerHTML = `<legend>${canvasInfo.legend}</legend>`;
+  canvasInfo['canvases'].forEach(
+      item => innerHTML +=
+      `${item.text}<canvas id="${item.id}" width="48" height="48"></canvas>`);
+  newFieldSet.innerHTML = innerHTML;
+  canvasArea.appendChild(newFieldSet);
+}
+
 async function testTFDrawAlpha(backendName) {
   await tf.setBackend(backendName);
   await tf.ready();
@@ -35,19 +46,34 @@ async function testTFDrawAlpha(backendName) {
 }
 
 async function testTFDrawAlphaGray(backendName) {
+  const idPrefix = 'tf.draw AlphaGray test';
+  const canvasInfo = {
+    'legend': `${idPrefix}(${backendName}):`,
+    'canvases': [
+      {
+        'text': `Draw by tf.draw(${backendName}), alpha = 0.3:`,
+        'id': `${idPrefix}_${backendName}_1`
+      },
+      {
+        'text': `Draw by tf.draw(${backendName}), alpha = 0.9:`,
+        'id': `${idPrefix}_${backendName}_2`
+      }
+    ]
+  };
+
+  appendCanvas(canvasInfo);
   await tf.setBackend(backendName);
   await tf.ready();
   tfdraw = true;
   drawContextType = getContextName(backendName);
   let dataURL1, dataURL2;
   {
-    const canvas = document.getElementById(`tfdraw_alphagray_${backendName}_1`);
-    console.log('dg1 ');
+    const canvas = document.getElementById(`${idPrefix}_${backendName}_1`);
     await drawBackgroundGray(canvas, 0.3);
     dataURL1 = canvas.toDataURL();
   }
   {
-    const canvas = document.getElementById(`tfdraw_alphagray_${backendName}_2`);
+    const canvas = document.getElementById(`${idPrefix}_${backendName}_2`);
     await drawBackgroundGray(canvas, 1.0);
     dataURL2 = canvas.toDataURL();
   }

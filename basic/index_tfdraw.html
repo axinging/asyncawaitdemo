@@ -12,6 +12,7 @@
     <h3>Canvas draw demo</h3>
     <script src="loader.js"></script>
     <script src="index_tfdraw.js"></script>
+    <div id = 'canvas_area'>
     <fieldset>
       <legend>canvas.drawImage Alpha test: </legend>
 
@@ -60,24 +61,7 @@
       Draw by tf.draw(webgpu):
       <canvas id="drawcomposite_webgpu" width="48" height="48"></canvas>
     </fieldset>
-    <fieldset>
-      <legend>tf.draw AlphaGray test(cpu): </legend>
-
-      Draw by tf.draw(cpu), alpha = 0.3:
-      <canvas id="tfdraw_alphagray_cpu_1" width="48" height="48"></canvas>
-
-      Draw by tf.draw(cpu), alpha = 0.9:
-      <canvas id="tfdraw_alphagray_cpu_2" width="48" height="48"></canvas>
-    </fieldset>
-    <fieldset>
-      <legend>tf.draw AlphaGray test(webgpu): </legend>
-
-      Draw by tf.draw(webgpu), alpha = 0.3:
-      <canvas id="tfdraw_alphagray_webgpu_1" width="48" height="48"></canvas>
-
-      Draw by tf.draw(webgpu), alpha = 0.9:
-      <canvas id="tfdraw_alphagray_webgpu_2" width="48" height="48"></canvas>
-    </fieldset>
+    </div>
     <script>
         (async function () {
           await main();
