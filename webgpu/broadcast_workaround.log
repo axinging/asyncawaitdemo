@@ -1,0 +1,258 @@
+Run bad case, with workaround:
+index_vec4_broadcast.html:1 // Dumped WGSL:
+ 
+  @group(0) @binding(0) var<storage, read> aData: array<vec4<f32>>;
+  @group(0) @binding(1) var<storage, read> bData: array<vec4<f32>>;
+  @group(0) @binding(2) var<storage, read_write> outputData: array<vec4<f32>>;
+  
+  fn o2i_outputData(offset: u32) -> vec2<u32> {
+    var indices: vec2<u32>;
+    var current = offset;
+    
+    let dim0 = current / 6u;
+    let rest0 = current % 6u;
+    indices[0] = dim0;
+    current = rest0;
+    indices[1] = current;
+    return indices;
+  }
+
+  fn calcOffsetA(outputIndices: vec2<u32>) -> u32 {
+    return 1u * (outputIndices[1] % 6u)+6u * (outputIndices[0] % 4u);
+  }
+
+  fn calcOffsetB(outputIndices: vec2<u32>) -> u32 {
+    return 1u * (outputIndices[1] % 1u);
+  }
+  
+
+  @compute @workgroup_size(64, 1, 1)
+  fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
+    let global_idx = global_id.x;
+  
+    if (global_idx >= 6u) { return; }
+    
+      
+      let outputIndices0 = o2i_outputData(global_idx * 4u + 0u);
+      let offsetA0 = calcOffsetA(outputIndices0);
+      let offsetB0 = calcOffsetB(outputIndices0);
+      let indexA0 = offsetA0 / 4u;
+      let indexB0 = offsetB0 / 4u;
+      let componentA0 = offsetA0 % 4u;
+      let componentB0 = offsetB0 % 4u;
+      outputData[global_idx][0] =  aData[indexA0][componentA0]+bData[indexB0][componentB0];
+      
+      let outputIndices1 = o2i_outputData(global_idx * 4u + 1u);
+      let offsetA1 = calcOffsetA(outputIndices1);
+      let offsetB1 = calcOffsetB(outputIndices1);
+      let indexA1 = offsetA1 / 4u;
+      let indexB1 = offsetB1 / 4u;
+      let componentA1 = offsetA1 % 4u;
+      let componentB1 = offsetB1 % 4u;
+      outputData[global_idx][1] =aData[indexA1][componentA1]+bData[indexB1][componentB1];
+
+      let outputIndices2 = o2i_outputData(global_idx * 4u + 2u);
+      let offsetA2 = calcOffsetA(outputIndices2);
+      let offsetB2 = calcOffsetB(outputIndices2);
+      let indexA2 = offsetA2 / 4u;
+      let indexB2 = offsetB2 / 4u;
+      let componentA2 = offsetA2 % 4u;
+      let componentB2 = offsetB2 % 4u;
+      outputData[global_idx][2] =aData[indexA2][componentA2]+bData[indexB2][componentB2];
+      
+      let outputIndices3 = o2i_outputData(global_idx * 4u + 3u);
+      let offsetA3 = calcOffsetA(outputIndices3);
+      let offsetB3 = calcOffsetB(outputIndices3);
+      let indexA3 = offsetA3 / 4u;
+      let indexB3 = offsetB3 / 4u;
+      let componentA3 = offsetA3 % 4u;
+      let componentB3 = offsetB3 % 4u;
+      if (1 == 1) {
+        outputData[global_idx][3] = f32(i32(f32(componentA3)/1000.0 + aData[indexA3][componentA3] + bData[indexB3][componentB3]));
+      } else {
+        outputData[global_idx][3] = aData[indexA3][componentA3] + bData[indexB3][componentB3];
+      }
+  }
+
+index_vec4_broadcast.html:1 /* Dumped generated HLSL */
+int tint_ftoi(float v) {
+  return ((v < 2147483520.0f) ? ((v < -2147483648.0f) ? -2147483648 : int(v)) : 2147483647);
+}
+
+ByteAddressBuffer tint_symbol : register(t0);
+ByteAddressBuffer tint_symbol_1 : register(t1);
+RWByteAddressBuffer tint_symbol_2 : register(u2);
+
+uint tint_div(uint lhs, uint rhs) {
+  return (lhs / ((rhs == 0u) ? 1u : rhs));
+}
+
+uint tint_mod(uint lhs, uint rhs) {
+  return (lhs % ((rhs == 0u) ? 1u : rhs));
+}
+
+uint2 tint_symbol_3(uint tint_symbol_4) {
+  uint2 tint_symbol_5 = uint2(0u, 0u);
+  uint tint_symbol_6 = tint_symbol_4;
+  const uint tint_symbol_7 = tint_div(tint_symbol_6, 6u);
+  const uint tint_symbol_8 = tint_mod(tint_symbol_6, 6u);
+  tint_symbol_5[0] = tint_symbol_7;
+  tint_symbol_6 = tint_symbol_8;
+  tint_symbol_5[1] = tint_symbol_6;
+  return tint_symbol_5;
+}
+
+uint tint_symbol_9(uint2 tint_symbol_10) {
+  return ((1u * tint_mod(tint_symbol_10[1], 6u)) + (6u * tint_mod(tint_symbol_10[0], 4u)));
+}
+
+uint tint_symbol_11(uint2 tint_symbol_10) {
+  return (1u * tint_mod(tint_symbol_10[1], 1u));
+}
+
+struct tint_symbol_44 {
+  uint3 tint_symbol_13 : SV_DispatchThreadID;
+};
+
+void tint_symbol_12_inner(uint3 tint_symbol_13) {
+  const uint tint_symbol_14 = tint_symbol_13.x;
+  if ((tint_symbol_14 >= 6u)) {
+    return;
+  }
+  const uint2 tint_symbol_15 = tint_symbol_3(((tint_symbol_14 * 4u) + 0u));
+  const uint tint_symbol_16 = tint_symbol_9(tint_symbol_15);
+  const uint tint_symbol_17 = tint_symbol_11(tint_symbol_15);
+  const uint tint_symbol_18 = tint_div(tint_symbol_16, 4u);
+  const uint tint_symbol_19 = tint_div(tint_symbol_17, 4u);
+  const uint tint_symbol_20 = tint_mod(tint_symbol_16, 4u);
+  const uint tint_symbol_21 = tint_mod(tint_symbol_17, 4u);
+  tint_symbol_2.Store((16u * tint_symbol_14), asuint((asfloat(tint_symbol.Load(((16u * tint_symbol_18) + (4u * tint_symbol_20)))) + asfloat(tint_symbol_1.Load(((16u * tint_symbol_19) + (4u * tint_symbol_21)))))));
+  const uint2 tint_symbol_22 = tint_symbol_3(((tint_symbol_14 * 4u) + 1u));
+  const uint tint_symbol_23 = tint_symbol_9(tint_symbol_22);
+  const uint tint_symbol_24 = tint_symbol_11(tint_symbol_22);
+  const uint tint_symbol_25 = tint_div(tint_symbol_23, 4u);
+  const uint tint_symbol_26 = tint_div(tint_symbol_24, 4u);
+  const uint tint_symbol_27 = tint_mod(tint_symbol_23, 4u);
+  const uint tint_symbol_28 = tint_mod(tint_symbol_24, 4u);
+  tint_symbol_2.Store(((16u * tint_symbol_14) + 4u), asuint((asfloat(tint_symbol.Load(((16u * tint_symbol_25) + (4u * tint_symbol_27)))) + asfloat(tint_symbol_1.Load(((16u * tint_symbol_26) + (4u * tint_symbol_28)))))));
+  const uint2 tint_symbol_29 = tint_symbol_3(((tint_symbol_14 * 4u) + 2u));
+  const uint tint_symbol_30 = tint_symbol_9(tint_symbol_29);
+  const uint tint_symbol_31 = tint_symbol_11(tint_symbol_29);
+  const uint tint_symbol_32 = tint_div(tint_symbol_30, 4u);
+  const uint tint_symbol_33 = tint_div(tint_symbol_31, 4u);
+  const uint tint_symbol_34 = tint_mod(tint_symbol_30, 4u);
+  const uint tint_symbol_35 = tint_mod(tint_symbol_31, 4u);
+  tint_symbol_2.Store(((16u * tint_symbol_14) + 8u), asuint((asfloat(tint_symbol.Load(((16u * tint_symbol_32) + (4u * tint_symbol_34)))) + asfloat(tint_symbol_1.Load(((16u * tint_symbol_33) + (4u * tint_symbol_35)))))));
+  const uint2 tint_symbol_36 = tint_symbol_3(((tint_symbol_14 * 4u) + 3u));
+  const uint tint_symbol_37 = tint_symbol_9(tint_symbol_36);
+  const uint tint_symbol_38 = tint_symbol_11(tint_symbol_36);
+  const uint tint_symbol_39 = tint_div(tint_symbol_37, 4u);
+  const uint tint_symbol_40 = tint_div(tint_symbol_38, 4u);
+  const uint tint_symbol_41 = tint_mod(tint_symbol_37, 4u);
+  const uint tint_symbol_42 = tint_mod(tint_symbol_38, 4u);
+  if (true) {
+    tint_symbol_2.Store(((16u * tint_symbol_14) + 12u), asuint(float(tint_ftoi((((float(tint_symbol_41) / 1000.0f) + asfloat(tint_symbol.Load(((16u * tint_symbol_39) + (4u * tint_symbol_41))))) + asfloat(tint_symbol_1.Load(((16u * tint_symbol_40) + (4u * tint_symbol_42)))))))));
+  } else {
+    tint_symbol_2.Store(((16u * tint_symbol_14) + 12u), asuint((asfloat(tint_symbol.Load(((16u * tint_symbol_39) + (4u * tint_symbol_41)))) + asfloat(tint_symbol_1.Load(((16u * tint_symbol_40) + (4u * tint_symbol_42)))))));
+  }
+}
+
+[numthreads(64, 1, 1)]
+void tint_symbol_12(tint_symbol_44 tint_symbol_43) {
+  tint_symbol_12_inner(tint_symbol_43.tint_symbol_13);
+  return;
+}
+
+/* FXC compile flags */ 
+D3DCOMPILE_PACK_MATRIX_ROW_MAJOR
+D3DCOMPILE_IEEE_STRICTNESS
+D3DCOMPILE_OPTIMIZATION_LEVEL0
+
+/* Dumped disassembled DXBC */
+//
+// Generated by Microsoft (R) HLSL Shader Compiler 10.1
+//
+//
+// Resource Bindings:
+//
+// Name                                 Type  Format         Dim      ID      HLSL Bind  Count
+// ------------------------------ ---------- ------- ----------- ------- -------------- ------
+// tint_symbol                       texture    byte         r/o      T0             t0      1 
+// tint_symbol_1                     texture    byte         r/o      T1             t1      1 
+// tint_symbol_2                         UAV    byte         r/w      U0             u2      1 
+//
+//
+//
+// Input signature:
+//
+// Name                 Index   Mask Register SysValue  Format   Used
+// -------------------- ----- ------ -------- -------- ------- ------
+// no Input
+//
+// Output signature:
+//
+// Name                 Index   Mask Register SysValue  Format   Used
+// -------------------- ----- ------ -------- -------- ------- ------
+// no Output
+cs_5_1
+dcl_globalFlags refactoringAllowed
+dcl_resource_raw T0[0:0], space=0
+dcl_resource_raw T1[1:1], space=0
+dcl_uav_raw U0[2:2], space=0
+dcl_input vThreadID.x
+dcl_temps 3
+dcl_thread_group 64, 1, 1
+ult [precise(x)] r0.x, vThreadID.x, l(0x00000006)
+if_nz r0.x
+  ishl [precise(xy)] r0.xy, vThreadID.xxxx, l(0x00000002, 0x00000004, 0x00000000, 0x00000000)
+  udiv [precise(x)] r0.x, r1.x, r0.x, l(0x00000006)
+  and [precise(x)] r0.x, r0.x, l(0x00000003)
+  imad [precise(x)] r0.x, l(0x00000006), r0.x, r1.x
+  ushr [precise(z)] r0.z, r0.x, l(0x00000002)
+  bfi [precise(x)] r0.x, l(0x00000002), l(0x00000002), r0.x, l(0x00000000)
+  imad [precise(x)] r0.x, r0.z, l(0x00000010), r0.x
+  ld_raw [precise(x)] r0.x, r0.x, T0[0].xxxx
+  ld_raw [precise(z)] r0.z, l(0x00000000), T1[1].xxxx
+  add [precise(x)] r1.x, r0.z, r0.x
+  imad [precise(xzw)] r0.xzw, vThreadID.xxxx, l(0x00000004, 0x00000000, 0x00000004, 0x00000004), l(0x00000001, 0x00000000, 0x00000002, 0x00000003)
+  udiv [precise(x)] r0.x, r2.x, r0.x, l(0x00000006)
+  and [precise(x)] r0.x, r0.x, l(0x00000003)
+  imad [precise(x)] r0.x, l(0x00000006), r0.x, r2.x
+  ushr [precise(x)] r0.x, r0.x, l(0x00000002)
+  imad [precise(x)] r0.x, r0.x, l(0x00000010), l(0x00000004)
+  ld_raw [precise(x)] r0.x, r0.x, T0[0].xxxx
+  ld_raw [precise(x)] r2.x, l(0x00000000), T1[1].xxxx
+  add [precise(y)] r1.y, r0.x, r2.x
+  udiv [precise(x)] r0.x, r2.x, r0.z, l(0x00000006)
+  and [precise(x)] r0.x, r0.x, l(0x00000003)
+  imad [precise(x)] r0.x, l(0x00000006), r0.x, r2.x
+  ushr [precise(z)] r0.z, r0.x, l(0x00000002)
+  bfi [precise(x)] r0.x, l(0x00000002), l(0x00000002), r0.x, l(0x00000000)
+  imad [precise(x)] r0.x, r0.z, l(0x00000010), r0.x
+  ld_raw [precise(x)] r0.x, r0.x, T0[0].xxxx
+  ld_raw [precise(z)] r0.z, l(0x00000000), T1[1].xxxx
+  add [precise(z)] r1.z, r0.z, r0.x
+  udiv [precise(x)] r0.x, r2.x, r0.w, l(0x00000006)
+  and [precise(x)] r0.x, r0.x, l(0x00000003)
+  imad [precise(x)] r0.x, l(0x00000006), r0.x, r2.x
+  ushr [precise(z)] r0.z, r0.x, l(0x00000002)
+  and [precise(w)] r0.w, r0.x, l(0x00000003)
+  utof [precise(w)] r0.w, r0.w
+  div [precise(w)] r0.w, r0.w, l(0x447a0000)
+  ishl [precise(z)] r0.z, r0.z, l(0x00000004)
+  bfi [precise(x)] r0.x, l(0x00000002), l(0x00000002), r0.x, r0.z
+  ld_raw [precise(x)] r0.x, r0.x, T0[0].xxxx
+  add [precise(x)] r0.x, r0.x, r0.w
+  ld_raw [precise(z)] r0.z, l(0x00000000), T1[1].xxxx
+  add [precise(x)] r0.x, r0.z, r0.x
+  lt [precise(zw)] r0.zw, r0.xxxx, l(0x00000000, 0x00000000, 0x4effffff, 0xcf000000)
+  ftoi [precise(x)] r0.x, r0.x
+  itof [precise(x)] r0.x, r0.x
+  movc [precise(x)] r0.x, r0.w, l(0xcf000000), r0.x
+  movc [precise(w)] r1.w, r0.z, r0.x, l(0x4f000000)
+  store_raw U0[2].xyzw, r0.y, r1.xyzw
+endif 
+ret 
+// Approximately 51 instruction slots used
+
+Float32Array(24) [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, buffer: ArrayBuffer(96), byteLength: 96, byteOffset: 0, length: 24, Symbol(Symbol.toStringTag): 'Float32Array']
