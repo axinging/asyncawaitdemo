@@ -6,6 +6,7 @@ function acquireBuffer(device, byteSize, usage) {
 }
 
 function getComputeShaderBad(workaround = 0) {
+  const workaroundStr = workaround ? '+ 1 - 1' : '';
   return ` 
   @group(0) @binding(0) var<storage, read> aData: array<vec4<f32>>;
   @group(0) @binding(1) var<storage, read> bData: array<vec4<f32>>;
@@ -36,9 +37,7 @@ function getComputeShaderBad(workaround = 0) {
   fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
     let global_idx = global_id.x;
   
-    if (global_idx >= 6u) { return; }
-    
-      
+    if (global_idx >= 6u) { return; }  
       let outputIndices0 = o2i_outputData(global_idx * 4u + 0u);
       let offsetA0 = calcOffsetA(outputIndices0);
       let offsetB0 = calcOffsetB(outputIndices0);
@@ -46,7 +45,7 @@ function getComputeShaderBad(workaround = 0) {
       let indexB0 = offsetB0 / 4u;
       let componentA0 = offsetA0 % 4u;
       let componentB0 = offsetB0 % 4u;
-      outputData[global_idx][0] =  aData[indexA0][componentA0]+bData[indexB0][componentB0];
+      outputData[global_idx][0] = aData[indexA0][componentA0]+bData[indexB0][componentB0];
       
       let outputIndices1 = o2i_outputData(global_idx * 4u + 1u);
       let offsetA1 = calcOffsetA(outputIndices1);
@@ -55,7 +54,7 @@ function getComputeShaderBad(workaround = 0) {
       let indexB1 = offsetB1 / 4u;
       let componentA1 = offsetA1 % 4u;
       let componentB1 = offsetB1 % 4u;
-      outputData[global_idx][1] =aData[indexA1][componentA1]+bData[indexB1][componentB1];
+      outputData[global_idx][1] = aData[indexA1][componentA1]+bData[indexB1][componentB1];
 
       let outputIndices2 = o2i_outputData(global_idx * 4u + 2u);
       let offsetA2 = calcOffsetA(outputIndices2);
@@ -64,20 +63,17 @@ function getComputeShaderBad(workaround = 0) {
       let indexB2 = offsetB2 / 4u;
       let componentA2 = offsetA2 % 4u;
       let componentB2 = offsetB2 % 4u;
-      outputData[global_idx][2] =aData[indexA2][componentA2]+bData[indexB2][componentB2];
+      outputData[global_idx][2] = aData[indexA2][componentA2]+bData[indexB2][componentB2];
       
-      let outputIndices3 = o2i_outputData(global_idx * 4u + 3u);
+      let idx3 = global_idx * 4u + 3u;
+      let outputIndices3 = o2i_outputData(idx3);
       let offsetA3 = calcOffsetA(outputIndices3);
-      let offsetB3 = calcOffsetB(outputIndices3);
       let indexA3 = offsetA3 / 4u;
+      let componentA3 = offsetA3 % 4u${workaroundStr};
+      let offsetB3 = calcOffsetB(outputIndices3);
       let indexB3 = offsetB3 / 4u;
-      let componentA3 = offsetA3 % 4u;
       let componentB3 = offsetB3 % 4u;
-      if (${workaround} == 1) {
-        outputData[global_idx][3] = f32(i32(f32(componentA3)/1000.0 + aData[indexA3][componentA3] + bData[indexB3][componentB3]));
-      } else {
-        outputData[global_idx][3] = aData[indexA3][componentA3] + bData[indexB3][componentB3];
-      }
+      outputData[global_idx][3] = aData[indexA3][componentA3] + bData[indexB3][componentB3];
   }
 `;
 }
@@ -152,7 +148,7 @@ async function runTest(device, shaderWgsl) {
   passEncoder.setPipeline(computePipeline);
   passEncoder.setBindGroup(0, bindGroup);
   const workPerThread = 4;
-  passEncoder.dispatchWorkgroups(1 /* x */, 1 /* y */);
+  passEncoder.dispatchWorkgroups(Math.ceil(sizeA * sizeB/workPerThread/64) /* x */, 1 /* y */);
   passEncoder.end();
 
   // Get a GPU buffer for reading in an unmapped state.

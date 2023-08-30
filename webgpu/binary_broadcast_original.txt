@@ -1,4 +1,4 @@
-Run bad case, with workaround:
+Run original case:
 index_vec4_broadcast.html:1 // Dumped WGSL:
  
   @group(0) @binding(0) var<storage, read> aData: array<vec4<f32>>;
@@ -30,9 +30,7 @@ index_vec4_broadcast.html:1 // Dumped WGSL:
   fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
     let global_idx = global_id.x;
   
-    if (global_idx >= 6u) { return; }
-    
-      
+    if (global_idx >= 6u) { return; }  
       let outputIndices0 = o2i_outputData(global_idx * 4u + 0u);
       let offsetA0 = calcOffsetA(outputIndices0);
       let offsetB0 = calcOffsetB(outputIndices0);
@@ -40,7 +38,7 @@ index_vec4_broadcast.html:1 // Dumped WGSL:
       let indexB0 = offsetB0 / 4u;
       let componentA0 = offsetA0 % 4u;
       let componentB0 = offsetB0 % 4u;
-      outputData[global_idx][0] =  aData[indexA0][componentA0]+bData[indexB0][componentB0];
+      outputData[global_idx][0] = aData[indexA0][componentA0]+bData[indexB0][componentB0];
       
       let outputIndices1 = o2i_outputData(global_idx * 4u + 1u);
       let offsetA1 = calcOffsetA(outputIndices1);
@@ -49,7 +47,7 @@ index_vec4_broadcast.html:1 // Dumped WGSL:
       let indexB1 = offsetB1 / 4u;
       let componentA1 = offsetA1 % 4u;
       let componentB1 = offsetB1 % 4u;
-      outputData[global_idx][1] =aData[indexA1][componentA1]+bData[indexB1][componentB1];
+      outputData[global_idx][1] = aData[indexA1][componentA1]+bData[indexB1][componentB1];
 
       let outputIndices2 = o2i_outputData(global_idx * 4u + 2u);
       let offsetA2 = calcOffsetA(outputIndices2);
@@ -58,27 +56,20 @@ index_vec4_broadcast.html:1 // Dumped WGSL:
       let indexB2 = offsetB2 / 4u;
       let componentA2 = offsetA2 % 4u;
       let componentB2 = offsetB2 % 4u;
-      outputData[global_idx][2] =aData[indexA2][componentA2]+bData[indexB2][componentB2];
+      outputData[global_idx][2] = aData[indexA2][componentA2]+bData[indexB2][componentB2];
       
-      let outputIndices3 = o2i_outputData(global_idx * 4u + 3u);
+      let idx3 = global_idx * 4u + 3u;
+      let outputIndices3 = o2i_outputData(idx3);
       let offsetA3 = calcOffsetA(outputIndices3);
-      let offsetB3 = calcOffsetB(outputIndices3);
       let indexA3 = offsetA3 / 4u;
-      let indexB3 = offsetB3 / 4u;
       let componentA3 = offsetA3 % 4u;
+      let offsetB3 = calcOffsetB(outputIndices3);
+      let indexB3 = offsetB3 / 4u;
       let componentB3 = offsetB3 % 4u;
-      if (1 == 1) {
-        outputData[global_idx][3] = f32(i32(f32(componentA3)/1000.0 + aData[indexA3][componentA3] + bData[indexB3][componentB3]));
-      } else {
-        outputData[global_idx][3] = aData[indexA3][componentA3] + bData[indexB3][componentB3];
-      }
+      outputData[global_idx][3] = aData[indexA3][componentA3] + bData[indexB3][componentB3];
   }
 
 index_vec4_broadcast.html:1 /* Dumped generated HLSL */
-int tint_ftoi(float v) {
-  return ((v < 2147483520.0f) ? ((v < -2147483648.0f) ? -2147483648 : int(v)) : 2147483647);
-}
-
 ByteAddressBuffer tint_symbol : register(t0);
 ByteAddressBuffer tint_symbol_1 : register(t1);
 RWByteAddressBuffer tint_symbol_2 : register(u2);
@@ -110,7 +101,7 @@ uint tint_symbol_11(uint2 tint_symbol_10) {
   return (1u * tint_mod(tint_symbol_10[1], 1u));
 }
 
-struct tint_symbol_44 {
+struct tint_symbol_45 {
   uint3 tint_symbol_13 : SV_DispatchThreadID;
 };
 
@@ -143,23 +134,20 @@ void tint_symbol_12_inner(uint3 tint_symbol_13) {
   const uint tint_symbol_34 = tint_mod(tint_symbol_30, 4u);
   const uint tint_symbol_35 = tint_mod(tint_symbol_31, 4u);
   tint_symbol_2.Store(((16u * tint_symbol_14) + 8u), asuint((asfloat(tint_symbol.Load(((16u * tint_symbol_32) + (4u * tint_symbol_34)))) + asfloat(tint_symbol_1.Load(((16u * tint_symbol_33) + (4u * tint_symbol_35)))))));
-  const uint2 tint_symbol_36 = tint_symbol_3(((tint_symbol_14 * 4u) + 3u));
-  const uint tint_symbol_37 = tint_symbol_9(tint_symbol_36);
-  const uint tint_symbol_38 = tint_symbol_11(tint_symbol_36);
-  const uint tint_symbol_39 = tint_div(tint_symbol_37, 4u);
-  const uint tint_symbol_40 = tint_div(tint_symbol_38, 4u);
-  const uint tint_symbol_41 = tint_mod(tint_symbol_37, 4u);
-  const uint tint_symbol_42 = tint_mod(tint_symbol_38, 4u);
-  if (true) {
-    tint_symbol_2.Store(((16u * tint_symbol_14) + 12u), asuint(float(tint_ftoi((((float(tint_symbol_41) / 1000.0f) + asfloat(tint_symbol.Load(((16u * tint_symbol_39) + (4u * tint_symbol_41))))) + asfloat(tint_symbol_1.Load(((16u * tint_symbol_40) + (4u * tint_symbol_42)))))))));
-  } else {
-    tint_symbol_2.Store(((16u * tint_symbol_14) + 12u), asuint((asfloat(tint_symbol.Load(((16u * tint_symbol_39) + (4u * tint_symbol_41)))) + asfloat(tint_symbol_1.Load(((16u * tint_symbol_40) + (4u * tint_symbol_42)))))));
-  }
+  const uint tint_symbol_36 = ((tint_symbol_14 * 4u) + 3u);
+  const uint2 tint_symbol_37 = tint_symbol_3(tint_symbol_36);
+  const uint tint_symbol_38 = tint_symbol_9(tint_symbol_37);
+  const uint tint_symbol_39 = tint_div(tint_symbol_38, 4u);
+  const uint tint_symbol_40 = tint_mod(tint_symbol_38, 4u);
+  const uint tint_symbol_41 = tint_symbol_11(tint_symbol_37);
+  const uint tint_symbol_42 = tint_div(tint_symbol_41, 4u);
+  const uint tint_symbol_43 = tint_mod(tint_symbol_41, 4u);
+  tint_symbol_2.Store(((16u * tint_symbol_14) + 12u), asuint((asfloat(tint_symbol.Load(((16u * tint_symbol_39) + (4u * tint_symbol_40)))) + asfloat(tint_symbol_1.Load(((16u * tint_symbol_42) + (4u * tint_symbol_43)))))));
 }
 
 [numthreads(64, 1, 1)]
-void tint_symbol_12(tint_symbol_44 tint_symbol_43) {
-  tint_symbol_12_inner(tint_symbol_43.tint_symbol_13);
+void tint_symbol_12(tint_symbol_45 tint_symbol_44) {
+  tint_symbol_12_inner(tint_symbol_44.tint_symbol_13);
   return;
 }
 
@@ -235,24 +223,14 @@ if_nz r0.x
   udiv [precise(x)] r0.x, r2.x, r0.w, l(0x00000006)
   and [precise(x)] r0.x, r0.x, l(0x00000003)
   imad [precise(x)] r0.x, l(0x00000006), r0.x, r2.x
-  ushr [precise(z)] r0.z, r0.x, l(0x00000002)
-  and [precise(w)] r0.w, r0.x, l(0x00000003)
-  utof [precise(w)] r0.w, r0.w
-  div [precise(w)] r0.w, r0.w, l(0x447a0000)
-  ishl [precise(z)] r0.z, r0.z, l(0x00000004)
-  bfi [precise(x)] r0.x, l(0x00000002), l(0x00000002), r0.x, r0.z
+  ushr [precise(x)] r0.x, r0.x, l(0x00000002)
+  imad [precise(x)] r0.x, r0.x, l(0x00000010), l(0x00000004)
   ld_raw [precise(x)] r0.x, r0.x, T0[0].xxxx
-  add [precise(x)] r0.x, r0.x, r0.w
   ld_raw [precise(z)] r0.z, l(0x00000000), T1[1].xxxx
-  add [precise(x)] r0.x, r0.z, r0.x
-  lt [precise(zw)] r0.zw, r0.xxxx, l(0x00000000, 0x00000000, 0x4effffff, 0xcf000000)
-  ftoi [precise(x)] r0.x, r0.x
-  itof [precise(x)] r0.x, r0.x
-  movc [precise(x)] r0.x, r0.w, l(0xcf000000), r0.x
-  movc [precise(w)] r1.w, r0.z, r0.x, l(0x4f000000)
+  add [precise(w)] r1.w, r0.z, r0.x
   store_raw U0[2].xyzw, r0.y, r1.xyzw
 endif 
 ret 
-// Approximately 51 instruction slots used
+// Approximately 41 instruction slots used
 
-Float32Array(24) [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, buffer: ArrayBuffer(96), byteLength: 96, byteOffset: 0, length: 24, Symbol(Symbol.toStringTag): 'Float32Array']
+script_vec4_broadcast.js:177 Float32Array(24) [0, 1, 2, 1, 4, 5, 6, 5, 8, 9, 10, 9, 12, 13, 14, 13, 16, 17, 18, 17, 20, 21, 22, 21, buffer: ArrayBuffer(96), byteLength: 96, byteOffset: 0, length: 24, Symbol(Symbol.toStringTag): 'Float32Array']
