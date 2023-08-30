@@ -6,7 +6,7 @@ function acquireBuffer(device, byteSize, usage) {
 }
 
 function getComputeShaderBad(workaround = 0) {
-  const workaroundStr = workaround ? '+ 1 - 1' : '';
+  const workaroundStr = workaround ? '+ 1u - 1u' : '';
   return ` 
   @group(0) @binding(0) var<storage, read> aData: array<vec4<f32>>;
   @group(0) @binding(1) var<storage, read> bData: array<vec4<f32>>;
