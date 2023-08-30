@@ -6,11 +6,10 @@ function acquireBuffer(device, byteSize, usage) {
 }
 
 function getComputeShaderBad(workaround = 0) {
-  const workaroundStr = workaround ? '+ 1u - 1u' : '';
+  const workaroundStr = workaround ? ' + 1u - 1u' : '';
   return ` 
   @group(0) @binding(0) var<storage, read> aData: array<vec4<f32>>;
-  @group(0) @binding(1) var<storage, read> bData: array<vec4<f32>>;
-  @group(0) @binding(2) var<storage, read_write> outputData: array<vec4<f32>>;
+  @group(0) @binding(1) var<storage, read_write> outputData: array<vec4<f32>>;
   
   fn o2i_outputData(offset: u32) -> vec2<u32> {
     var indices: vec2<u32>;
@@ -28,52 +27,36 @@ function getComputeShaderBad(workaround = 0) {
     return 1u * (outputIndices[1] % 6u)+6u * (outputIndices[0] % 4u);
   }
 
-  fn calcOffsetB(outputIndices: vec2<u32>) -> u32 {
-    return 1u * (outputIndices[1] % 1u);
-  }
-  
-
   @compute @workgroup_size(64, 1, 1)
   fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
     let global_idx = global_id.x;
   
     if (global_idx >= 6u) { return; }  
-      let outputIndices0 = o2i_outputData(global_idx * 4u + 0u);
-      let offsetA0 = calcOffsetA(outputIndices0);
-      let offsetB0 = calcOffsetB(outputIndices0);
-      let indexA0 = offsetA0 / 4u;
-      let indexB0 = offsetB0 / 4u;
-      let componentA0 = offsetA0 % 4u;
-      let componentB0 = offsetB0 % 4u;
-      outputData[global_idx][0] = aData[indexA0][componentA0]+bData[indexB0][componentB0];
-      
-      let outputIndices1 = o2i_outputData(global_idx * 4u + 1u);
-      let offsetA1 = calcOffsetA(outputIndices1);
-      let offsetB1 = calcOffsetB(outputIndices1);
-      let indexA1 = offsetA1 / 4u;
-      let indexB1 = offsetB1 / 4u;
-      let componentA1 = offsetA1 % 4u;
-      let componentB1 = offsetB1 % 4u;
-      outputData[global_idx][1] = aData[indexA1][componentA1]+bData[indexB1][componentB1];
+    
+    let outputIndices0 = o2i_outputData(global_idx * 4u + 0u);
+    let offsetA0 = calcOffsetA(outputIndices0);
+    let indexA0 = offsetA0 / 4u;
+    let componentA0 = offsetA0 % 4u;
+    outputData[global_idx][0] = aData[indexA0][componentA0];
+    
+    let outputIndices1 = o2i_outputData(global_idx * 4u + 1u);
+    let offsetA1 = calcOffsetA(outputIndices1);
+    let indexA1 = offsetA1 / 4u;
+    let componentA1 = offsetA1 % 4u;
+    outputData[global_idx][1] = aData[indexA1][componentA1];
 
-      let outputIndices2 = o2i_outputData(global_idx * 4u + 2u);
-      let offsetA2 = calcOffsetA(outputIndices2);
-      let offsetB2 = calcOffsetB(outputIndices2);
-      let indexA2 = offsetA2 / 4u;
-      let indexB2 = offsetB2 / 4u;
-      let componentA2 = offsetA2 % 4u;
-      let componentB2 = offsetB2 % 4u;
-      outputData[global_idx][2] = aData[indexA2][componentA2]+bData[indexB2][componentB2];
-      
-      let idx3 = global_idx * 4u + 3u;
-      let outputIndices3 = o2i_outputData(idx3);
-      let offsetA3 = calcOffsetA(outputIndices3);
-      let indexA3 = offsetA3 / 4u;
-      let componentA3 = offsetA3 % 4u${workaroundStr};
-      let offsetB3 = calcOffsetB(outputIndices3);
-      let indexB3 = offsetB3 / 4u;
-      let componentB3 = offsetB3 % 4u;
-      outputData[global_idx][3] = aData[indexA3][componentA3] + bData[indexB3][componentB3];
+    let outputIndices2 = o2i_outputData(global_idx * 4u + 2u);
+    let offsetA2 = calcOffsetA(outputIndices2);
+    let indexA2 = offsetA2 / 4u;
+    let componentA2 = offsetA2 % 4u;
+    outputData[global_idx][2] = aData[indexA2][componentA2];
+    
+    let idx3 = global_idx * 4u + 3u;
+    let outputIndices3 = o2i_outputData(idx3);
+    let offsetA3 = calcOffsetA(outputIndices3);
+    let indexA3 = offsetA3 / 4u;
+    let componentA3 = offsetA3 % 4u${workaroundStr};
+    outputData[global_idx][3] = aData[indexA3][componentA3];
   }
 `;
 }
@@ -86,7 +69,10 @@ function defaultGpuBufferUsage() {
 
 async function runTest(device, shaderWgsl) {
   // First Matrix
-  const firstMatrix = new Float32Array([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]);
+  const firstMatrix = new Float32Array([
+    0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11,
+    12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23
+  ]);
 
   const gpuBufferFirstMatrix = device.createBuffer({
     mappedAtCreation: true,
@@ -96,18 +82,6 @@ async function runTest(device, shaderWgsl) {
   const arrayBufferFirstMatrix = gpuBufferFirstMatrix.getMappedRange();
   new Float32Array(arrayBufferFirstMatrix).set(firstMatrix);
   gpuBufferFirstMatrix.unmap();
-
-  // Second Matrix
-  const secondMatrix = new Float32Array([0]);
-  const gpuBufferSecondMatrix = device.createBuffer({
-    mappedAtCreation: true,
-    size: 16, //secondMatrix.byteLength,//workaround"Binding size (4) is smaller than the minimum binding size (16)."
-    usage: GPUBufferUsage.STORAGE
-  });
-  const arrayBufferSecondMatrix = gpuBufferSecondMatrix.getMappedRange();
-  new Uint8Array(arrayBufferSecondMatrix).set(secondMatrix);
-  gpuBufferSecondMatrix.unmap();
-
 
   // Result Matrix
   const sizeA = 4;
@@ -135,9 +109,8 @@ async function runTest(device, shaderWgsl) {
   const bindGroup = device.createBindGroup({
     layout: bindGroupLayout,
     entries: [
-        {binding: 0, resource: {buffer: gpuBufferFirstMatrix}},
-        {binding: 1, resource: {buffer: gpuBufferSecondMatrix}},
-        {binding: 2, resource: {buffer: resultMatrixBuffer}}
+      {binding: 0, resource: {buffer: gpuBufferFirstMatrix}},
+      {binding: 1, resource: {buffer: resultMatrixBuffer}}
     ]
   });
   // Commands submission
@@ -148,7 +121,8 @@ async function runTest(device, shaderWgsl) {
   passEncoder.setPipeline(computePipeline);
   passEncoder.setBindGroup(0, bindGroup);
   const workPerThread = 4;
-  passEncoder.dispatchWorkgroups(Math.ceil(sizeA * sizeB/workPerThread/64) /* x */, 1 /* y */);
+  passEncoder.dispatchWorkgroups(
+      Math.ceil(sizeA * sizeB / workPerThread / 64) /* x */, 1 /* y */);
   passEncoder.end();
 
   // Get a GPU buffer for reading in an unmapped state.
@@ -168,7 +142,7 @@ async function runTest(device, shaderWgsl) {
   const gpuCommands = commandEncoder.finish();
   device.queue.submit([gpuCommands]);
 
-  // TODO(memoryleak): below is successful.
+  gpuBufferFirstMatrix.destroy();
   resultMatrixBuffer.destroy();
 
   // Read buffer.
@@ -187,8 +161,8 @@ async function runTest(device, shaderWgsl) {
 
   const adapter = await navigator.gpu.requestAdapter();
   const device = await adapter.requestDevice();
-  console.log("Run original case:");
+  console.log('Run original case:');
   await runTest(device, getComputeShaderBad(0));
-  console.log("Run bad case, with workaround:");
+  console.log('Run case with workaround:');
   await runTest(device, getComputeShaderBad(1));
 })();
